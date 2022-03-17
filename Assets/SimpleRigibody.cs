@@ -20,6 +20,6 @@ public class SimpleRigibody : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _Rigidbody.AddForce(new Vector3(-10,-10,0), ForceMode.Acceleration);
+        _Rigidbody.AddForce(new Vector3(0,-10,0), ForceMode.Acceleration);
     }
 }

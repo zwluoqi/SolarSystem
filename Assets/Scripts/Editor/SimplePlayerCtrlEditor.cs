@@ -14,6 +14,6 @@ public class SimplePlayerCtrlEditor : Editor
     {
         var my = target as SimplePlayerCtrl;
         Handles.color = Color.yellow;
-        Handles.DrawLine(my.transform.position,my.transform.position+my.AstronAcceleration*100);
+        Handles.DrawLine(my.transform.position,my.transform.position+my.astronAcceleration*100);
     }
 }

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
+[RequireComponent(typeof(Rigidbody))]
 public class Astronomical : MonoBehaviour
 {
-    
+    public Rigidbody _rigidbody;
     public float Radius = 1500;
     
     public float Mass =1;
@@ -15,15 +15,21 @@ public class Astronomical : MonoBehaviour
     public Vector3 CurrentVelocity;
     public Color _color = Color.red;
     public float surfaceGravity = 10;
+    public Vector3 curAcceleration;
     private Vector3 savePos;
     private Vector3 saveVelocity;
 
     private MaterialPropertyBlock _materialPropertyBlock;
 
     private TrailRenderer _trailRenderer;
+
+    public bool move = true;
     
     private void Start()
     {
+        this._rigidbody = GetComponent<Rigidbody>();
+        this._rigidbody.useGravity = false;
+        this._rigidbody.isKinematic = true;
         this.CurrentVelocity = InitVelocity;
         _materialPropertyBlock = new MaterialPropertyBlock();
         _trailRenderer = (new GameObject()).AddComponent<TrailRenderer>();
@@ -38,18 +44,20 @@ public class Astronomical : MonoBehaviour
     
     public void UpdateVelocity(Astronomical[] astronomicals, float fixedTime)
     {
+        if (!move)
+        {
+            return;
+        }
+        curAcceleration = Vector3.zero;
         foreach (var astronomical in astronomicals)
         {
             if (astronomical != this)
             {
-                var sqrtDistance = Vector3.SqrMagnitude(astronomical.transform.position - transform.position);
-                if (sqrtDistance == 0)
-                {
-                    continue;
-                }
-                var forceDir = (astronomical.transform.position - transform.position).normalized;
+                var sqrtDistance = Vector3.SqrMagnitude(astronomical._rigidbody.position - _rigidbody.position);
+                var forceDir = (astronomical._rigidbody.position - _rigidbody.position).normalized;
                 var force = forceDir * GlobalDefine.G * Mass * astronomical.Mass / sqrtDistance;
                 var acceleration = force / Mass;
+                curAcceleration += acceleration;
                 CurrentVelocity += acceleration * fixedTime;
             }
         }
@@ -57,12 +65,25 @@ public class Astronomical : MonoBehaviour
 
     public void UpdatePosition(float fixedTime)
     {
-        transform.position += CurrentVelocity * fixedTime;
+        if (!move)
+        {
+            return;
+        }
+
+        if (SolarSystemSimulater.Inst.centerTrans == this)
+        {
+            //原点,相对位置不变
+        }
+        else
+        {
+            var relativeVelocity = (CurrentVelocity - SolarSystemSimulater.Inst.centerTrans.CurrentVelocity);
+            _rigidbody.position += relativeVelocity * fixedTime;
+        }
     }
 
     private void OnValidate()
     {
-        this.transform.localScale = new Vector3(this.Radius,this.Radius,this.Radius);
+        this.transform.localScale = new Vector3(this.Radius, this.Radius, this.Radius) * 2;
         if (_materialPropertyBlock == null)
         {
             _materialPropertyBlock = new MaterialPropertyBlock();
@@ -71,5 +92,6 @@ public class Astronomical : MonoBehaviour
         _materialPropertyBlock.SetColor("_BaseColor",_color);
         GetComponent<Renderer>().SetPropertyBlock(_materialPropertyBlock);
         Mass = surfaceGravity * Radius * Radius / GlobalDefine.G;
+        _rigidbody = GetComponent<Rigidbody>();
     }
 }

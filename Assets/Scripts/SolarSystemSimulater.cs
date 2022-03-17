@@ -11,8 +11,10 @@ public class SolarSystemSimulater:MonoBehaviour
     public int iterNumbers = 1;
     
     [Range(1,1000)]
-    public int runningSpeed = 10;
+    public int runningIterNumber = 10;
     public Astronomical centerTrans;
+    [NonSerialized]
+    public Astronomical defaultTrans;
 
     public Material lineMaterial;
 
@@ -33,16 +35,16 @@ public class SolarSystemSimulater:MonoBehaviour
     
     private void Awake()
     {
-
+        defaultTrans = centerTrans;
         Time.fixedDeltaTime = GlobalDefine.deltaTime;
     }
     
-    private void Update()
+    private void FixedUpdate()
     {
         _astronomicals = FindObjectsOfType<Astronomical>();
 
 
-        for (int i = 0; i < runningSpeed; i++)
+        for (int i = 0; i < runningIterNumber; i++)
         {
             foreach (var astronomical in _astronomicals)
             {
@@ -55,4 +57,10 @@ public class SolarSystemSimulater:MonoBehaviour
             }
         }
     }
+
+    public Vector3 GetRelativeSpeed(Astronomical selectAstron)
+    {
+        return selectAstron.CurrentVelocity - centerTrans.CurrentVelocity;
+    }
+    
 }

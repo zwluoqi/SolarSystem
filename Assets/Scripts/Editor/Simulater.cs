@@ -12,55 +12,16 @@ public class Simulater:IDisposable
 
     public static Simulater Inst = new Simulater();
 
-    private int iterNumbers;
-    private int simulaterSpeed;
-    private AstronomicalData center;
+    public int iterNumbers;
+    public int simulaterSpeed;
+    public int centerIndex;
     private Dictionary<int,AstronomicalData> cacheAstron = new Dictionary<int,AstronomicalData>(128);
 
-    private int astronomicalListCount = 0;
-    private AstronomicalData[] astronomicalDatas = new AstronomicalData[128];
+    public int astronomicalListCount = 0;
+    public AstronomicalData[] astronomicalDatas = new AstronomicalData[128];
     
-    private void SetPosition(AstronomicalData astronomical, int index)
-    {
-        astronomical.cachePrePoss[index] = astronomical.cacheCurPoss;
-    }
-
-    public void UpdateVelocity(AstronomicalData self, float fixedTime)
-    {
-        for (int asIndex = 0; asIndex < astronomicalListCount; asIndex++)
-        {
-            var astronomical = astronomicalDatas[asIndex];
-            if (astronomical != self)
-            {
-                var sqrtDistance = Vector3.SqrMagnitude(astronomical.cacheCurPoss- self.cacheCurPoss);
-                var forceDir = (astronomical.cacheCurPoss- self.cacheCurPoss).normalized;
-                var force = forceDir * GlobalDefine.G * self.Mass * astronomical.Mass / sqrtDistance;
-                var acceleration = force / self.Mass;
-                self.cacheCurVelocity += acceleration * fixedTime;
-            }
-        }
-    }
-
-    public void UpdatePosition(AstronomicalData self,float fixedTime)
-    {
-        if (center == null)
-        {
-            self.cacheCurPoss += self.cacheCurVelocity * fixedTime;
-        }
-        else
-        {
-            if (center == self)
-            {
-                
-            }
-            else
-            {
-                var relativeVolocity = self.cacheCurVelocity-
-                                       center.cacheCurVelocity;
-                self.cacheCurPoss += relativeVolocity * fixedTime;
-            }
-        }
-    }
+    public SimulaterThread simulaterThread = new SimulaterThread();
+    
 
     private Thread _thread;
     private bool threadRunning;
@@ -76,7 +37,7 @@ public class Simulater:IDisposable
     {
         while (threadRunning)
         {
-            ThreadUpdate();
+            simulaterThread.ThreadUpdate(this);
             Thread.Sleep(60);
         }
         Debug.LogError("thread done");
@@ -84,7 +45,7 @@ public class Simulater:IDisposable
     
      ~Simulater()
      {
-         lock (_threadObj)
+         lock (simulaterThread._threadObj)
          {
              threadRunning = false;
          }
@@ -95,7 +56,7 @@ public class Simulater:IDisposable
 
      public void Dispose()
      {
-         lock (_threadObj)
+         lock (simulaterThread._threadObj)
          {
              threadRunning = false;
          }
@@ -104,7 +65,6 @@ public class Simulater:IDisposable
      }
 
 
-     public object _threadObj = new object();
 
     
     public void Update()
@@ -115,106 +75,42 @@ public class Simulater:IDisposable
         }
         var _astronomicals = GameObject.FindObjectsOfType<Astronomical>();
         
-        lock (_threadObj)
+        lock (simulaterThread._threadObj)
         {
+            astronomicalListCount = 0;
+            var centerId = SolarSystemSimulater.Inst.centerTrans.GetInstanceID();
             foreach (var astronomical in _astronomicals)
             {
                 var id = astronomical.GetInstanceID();
+                if (id == centerId)
+                {
+                    centerIndex = astronomicalListCount;
+                }
                 
                 if (!cacheAstron.TryGetValue(id,out var tmp))
                 {
                     tmp = new AstronomicalData();
                     cacheAstron[id] = tmp;
-                    astronomicalDatas[astronomicalListCount++] = tmp;
                 }
                 tmp.initMass = astronomical.Mass;
-                tmp.initCurPoss = astronomical.transform.position;
+                tmp.initCurPoss = astronomical._rigidbody.position;
                 tmp.initCurVelocity = astronomical.CurrentVelocity;
-            }
-
-            if (SolarSystemSimulater.Inst.centerTrans != null)
-            {
-                center = cacheAstron[SolarSystemSimulater.Inst.centerTrans.GetInstanceID()];
-            }
-            else
-            {
-                center = null;
+                astronomicalDatas[astronomicalListCount++] = tmp;
+                
+                
+                Handles.color = astronomical._color;
+                Handles.DrawPolyLine(cacheAstron[id].cachePrePoss);
             }
 
             iterNumbers = SolarSystemSimulater.Inst.iterNumbers;
             simulaterSpeed = SolarSystemSimulater.Inst.simulaterSpeed;
-            for (int i = 0; i < _astronomicals.Length; i++)
-            {
-                Handles.color = _astronomicals[i]._color;
-                Handles.DrawPolyLine(astronomicalDatas[i].cacheToMainPrePoss);
-            }
         }
         
-        // Profiler.BeginSample("DrawPolyLine");
-        //
-        //
-        // Profiler.EndSample();
     }
     
-    public class AstronomicalData
-    {
-        public float Mass;
-        public Vector3 cacheCurPoss;
-        public Vector3 cacheCurVelocity;
-        public float initMass;
-        public Vector3 initCurPoss;
-        public Vector3 initCurVelocity;
-        
-        public Vector3[] cachePrePoss = new Vector3[1024];
-        public Vector3[] cacheToMainPrePoss = new Vector3[1024];
-    }
+   
     
-    public void ThreadUpdate()
-    {
-        lock (_threadObj)
-        {
-            for (int asIndex = 0; asIndex < astronomicalListCount; asIndex++)
-            {
-                var astronomical = astronomicalDatas[asIndex];
-                astronomical.Mass = astronomical.initMass;
-                astronomical.cacheCurPoss = astronomical.initCurPoss;
-                astronomical.cacheCurVelocity = astronomical.initCurVelocity;
-            }
-        }
-        
-        for (int i = 0; i < 1024; i++)
-        {
-            for (int j = 0; j < iterNumbers; j++)
-            {
-                for (int asIndex = 0; asIndex < astronomicalListCount; asIndex++)
-                {
-                    var astronomical = astronomicalDatas[asIndex];
-                    UpdateVelocity(astronomical, simulaterSpeed * GlobalDefine.deltaTime);
-                }
-
-                for (int asIndex = 0; asIndex < astronomicalListCount; asIndex++)
-                {
-                    var astronomical = astronomicalDatas[asIndex];
-                    UpdatePosition(astronomical, simulaterSpeed * GlobalDefine.deltaTime);
-                }
-            }
-
-            for (int asIndex = 0; asIndex < astronomicalListCount; asIndex++)
-            {
-                var astronomical = astronomicalDatas[asIndex];
-                SetPosition(astronomical, i);
-            }
-        }
-
-        lock (_threadObj)
-        {
-            for (int asIndex = 0; asIndex < astronomicalListCount; asIndex++)
-            {
-                var astronomical = astronomicalDatas[asIndex];
-                Array.Copy(astronomical.cachePrePoss, astronomical.cacheToMainPrePoss,astronomical.cachePrePoss.Length);
-            }
-        }
-    }
+    
 
 }
     
