@@ -14,61 +14,124 @@ public class SpaceShipUIInteraction : MonoBehaviour
     public Image horitalSpeed;
 
     public Image verticalSpeed;
+    public TMP_Text hSpeed;
+    public TMP_Text vSpeed;
 
     public Astronomical selectAstron;
     public SimpleSpaceShip spaceShip;
 
+    public Vector2 canveSize;
     private void Start()
     {
         TestCollider2D.onGlobalClick += delegate(GameObject go)
         {
             selectAstron = go.GetComponent<Astronomical>();
         };
+        canveSize = GetComponent<RectTransform>().sizeDelta;
     }
 
     // Update is called once per frame
+     
     void Update()
     {
         if (selectAstron != null)
         {
             info.gameObject.SetActive(true);
-            var distacen = (selectAstron._rigidbody.position - spaceShip._rigidbody.position).magnitude - selectAstron.Radius-spaceShip.transform.localScale.x*0.5;
-            var selectAstronSpeed = SolarSystemSimulater.Inst.GetRelativeSpeed(selectAstron);
+            var dir = (selectAstron._rigidbody.position - spaceShip._rigidbody.position);
+            var distance = dir.magnitude - selectAstron.Radius-spaceShip.transform.localScale.x*0.5;
+            var astronSpeed = SolarSystemSimulater.Inst.GetRelativeSpeed(selectAstron);
             //天体相对飞船的速度
-            var crossSpeed = selectAstronSpeed - spaceShip._rigidbody.velocity;
-            StringBuilder stringBuilder = new StringBuilder();
-            if (distacen > 1000)
-            {
-                stringBuilder.AppendLine("距离:" + (int) (distacen / 1000) + "KM");
-            }
-            else
-            {
-                stringBuilder.AppendLine("距离:" + (int) (distacen) + "M");
-            }
-            if (crossSpeed.magnitude > 1000)
-            {
-                stringBuilder.AppendLine("速度:" + (int) (crossSpeed.magnitude / 1000) + "KM/S");
-            }
-            else
-            {
-                stringBuilder.AppendLine("速度:" + (int) (crossSpeed.magnitude) + "M/S");
-            }
+            var relativeSpeed = astronSpeed - spaceShip._rigidbody.velocity;
+
 
             var spaceShipUp = spaceShip._rigidbody.rotation * Vector3.up;
             var spaceShipRight = spaceShip._rigidbody.rotation * Vector3.right;
-            var crossSpeedUp = Vector3.Project(crossSpeed, spaceShipUp);
-            var up = Vector3.Angle(crossSpeed, spaceShipUp) < 90;
-            var crossSpeedRight = Vector3.Project(crossSpeed, spaceShipRight);
-            var right = Vector3.Angle(crossSpeed, spaceShipRight) < 90;
-            horitalSpeed.rectTransform.sizeDelta = new Vector2(crossSpeedRight.magnitude*10, 2);
-            horitalSpeed.transform.localScale = new Vector3(right ? 1 : -1, 1, 1);
-            verticalSpeed.rectTransform.sizeDelta = new Vector2(2, crossSpeedUp.magnitude*10);
-            verticalSpeed.transform.localScale = new Vector3(1, up?-1:1, 1);
+            var spaceShipForward = spaceShip._rigidbody.rotation * Vector3.forward;
+            
+            var upSpeed =  Vector3.Project( relativeSpeed,spaceShipUp);
+            var rightSpeed = Vector3.Project( relativeSpeed,spaceShipRight);
+            var forwardSpeed = Vector3.Project( relativeSpeed,spaceShipForward);
+
+            var isUp = Vector3.Dot(spaceShip.transform.up, upSpeed)>0;
+            var isRight = Vector3.Dot(spaceShip.transform.right, rightSpeed)>0;
+            var isForward = Vector3.Dot(spaceShip.transform.forward, forwardSpeed)>0;
+            
+            
+            horitalSpeed.rectTransform.sizeDelta = new Vector2(Mathf.Min(rightSpeed.magnitude*2,150), 2);
+            horitalSpeed.transform.localScale = new Vector3(isRight ? 1 : -1, 1, 1);
+            hSpeed.text = GetSpeedDesc(rightSpeed);
+            hSpeed.rectTransform.anchoredPosition = new Vector2(horitalSpeed.rectTransform.sizeDelta.x*(isRight ? 1 : -1),
+                hSpeed.rectTransform.anchoredPosition.y);
+            
+            
+            verticalSpeed.rectTransform.sizeDelta = new Vector2(2, Mathf.Min(upSpeed.magnitude*2,150));
+            verticalSpeed.transform.localScale = new Vector3(1, isUp?-1:1, 1);
+            vSpeed.text = GetSpeedDesc(upSpeed);
+            vSpeed.rectTransform.anchoredPosition = new Vector2(vSpeed.rectTransform.anchoredPosition.x,
+                verticalSpeed.rectTransform.sizeDelta.y*(isUp?1:-1));
+
+            
+            StringBuilder stringBuilder = new StringBuilder();
+            if (distance > 1000)
+            {
+                stringBuilder.AppendLine("距离:" + (int) (distance / 1000) + "KM");
+            }
+            else
+            {
+                stringBuilder.AppendLine("距离:" + (int) (distance) + "M");
+            }
+
+            var normalSpeedDesc = (isForward?"+":"-") + GetSpeedDesc(forwardSpeed);
+
+            stringBuilder.AppendLine("径向速度:" + normalSpeedDesc);
+            
             info.text = stringBuilder.ToString();
+            
+            
+            var screenPoint = Camera.main.WorldToViewportPoint(selectAstron.transform.position);
+            if (screenPoint.z <= 0)
+            {
+                
+            }
+            else
+            {
+
+                screenPoint.x = Mathf.Clamp(screenPoint.x, 0, 1);
+                screenPoint.x = screenPoint.x - 0.5f;
+                screenPoint.y = Mathf.Clamp(screenPoint.y, 0, 1);
+                screenPoint.y = screenPoint.y - 0.5f;
+
+
+                var posx = screenPoint.x * canveSize.x;
+                var posy = screenPoint.y * canveSize.y;
+
+                posy = Mathf.Clamp(posy,
+                    -(canveSize.y / 2 - 100) + verticalSpeed.rectTransform.sizeDelta.y,
+                    (canveSize.y / 2 - 100) - verticalSpeed.rectTransform.sizeDelta.y);
+
+                posx = Mathf.Clamp(posx,
+                    -(canveSize.x / 2 - 100) + horitalSpeed.rectTransform.sizeDelta.x,
+                    (canveSize.x / 2 - 100) - horitalSpeed.rectTransform.sizeDelta.x);
+
+                info.rectTransform.anchoredPosition = new Vector2(posx, posy);
+            }
         }
         else
         {
             info.gameObject.SetActive(false);
+        }
+    }
+
+    private string GetSpeedDesc(Vector3 crossSpeed)
+    {
+        var length = crossSpeed.magnitude;
+        if (length > 1000)
+        {
+            return ((int) (length / 1000) + "KM/S");
+        }
+        else
+        {
+            return  ((int) (length) + "M/S");
         }
     }
 }

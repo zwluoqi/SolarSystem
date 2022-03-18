@@ -18,7 +18,7 @@ public class Astronomical : MonoBehaviour
     public float surfaceGravity = 10;
     
     private Vector3 curAcceleration;
-    private Vector3 CurrentVelocity;
+    private Vector3 currentVelocity;
 
     private MaterialPropertyBlock _materialPropertyBlock;
 
@@ -31,7 +31,7 @@ public class Astronomical : MonoBehaviour
         this._rigidbody = GetComponent<Rigidbody>();
         this._rigidbody.useGravity = false;
         this._rigidbody.isKinematic = true;
-        this.CurrentVelocity = InitVelocity;
+        this.currentVelocity = InitVelocity;
         _materialPropertyBlock = new MaterialPropertyBlock();
         _trailRenderer = (new GameObject()).AddComponent<TrailRenderer>();
         _trailRenderer.transform.SetParent(this.transform);
@@ -45,7 +45,7 @@ public class Astronomical : MonoBehaviour
 
     public Vector3 GetCurrentVelocity()
     {
-        return CurrentVelocity;
+        return currentVelocity;
     }
     public Vector3 GetCurAcceleration()
     {
@@ -68,7 +68,7 @@ public class Astronomical : MonoBehaviour
                 var force = forceDir * GlobalDefine.G * Mass * astronomical.Mass / sqrtDistance;
                 var acceleration = force / Mass;
                 curAcceleration += acceleration;
-                CurrentVelocity += acceleration * fixedTime;
+                currentVelocity += acceleration * fixedTime;
             }
         }
     }
@@ -86,7 +86,7 @@ public class Astronomical : MonoBehaviour
         }
         else
         {
-            Vector3 relativeVelocity = CurrentVelocity;
+            Vector3 relativeVelocity = currentVelocity;
             if (SolarSystemSimulater.Inst.centerTrans != null)
             {
                  relativeVelocity -=  SolarSystemSimulater.Inst.centerTrans.GetCurrentVelocity();
@@ -110,7 +110,8 @@ public class Astronomical : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         if (!Application.isPlaying)
         {
-            CurrentVelocity = InitVelocity;
+            currentVelocity = InitVelocity;
+            UpdateVelocity(GameObject.FindObjectsOfType<Astronomical>(),0);
         }
     }
 

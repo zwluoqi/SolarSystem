@@ -60,19 +60,12 @@ public class SimpleSpaceShip:MonoBehaviour
     {
         var astrons = GameObject.FindObjectsOfType<Astronomical>();
         astronAcceleration = Vector3.zero;
-        var maxAcceleration = float.MinValue;
-        Astronomical nearestAstronomical = null;
         foreach (var astronomical in astrons)
         {
             var sqrtDistance = Vector3.SqrMagnitude(astronomical._rigidbody.position - _rigidbody.position);
             var forceDir = (astronomical._rigidbody.position - _rigidbody.position).normalized;
             var acceleration = forceDir * GlobalDefine.G  * astronomical.Mass / sqrtDistance;
             astronAcceleration += acceleration;
-            if (acceleration.magnitude > maxAcceleration)
-            {
-                maxAcceleration = acceleration.magnitude;
-                nearestAstronomical = astronomical;
-            }
         }
         //引力加速度
         _rigidbody.AddForce(astronAcceleration, ForceMode.Acceleration);
@@ -95,7 +88,7 @@ public class SimpleSpaceShip:MonoBehaviour
 
 
         //飞船动力
-        if (!grounding)
+        // if (!grounding)
         {
             up = _rigidbody.rotation * Vector3.up;
             right = _rigidbody.rotation * Vector3.right;
@@ -104,33 +97,55 @@ public class SimpleSpaceShip:MonoBehaviour
             moveDir = moveDir.normalized;
             _rigidbody.AddForce(moveDir*engineAcceleration, ForceMode.Acceleration);
         }
-        else
-        {
-            up = _rigidbody.rotation * Vector3.up;
-            var moveDir = up * inputDir.y;
-            moveDir = moveDir.normalized;
-            _rigidbody.AddForce(moveDir*engineAcceleration, ForceMode.Acceleration);
-        }
 
+        var maxAccelerationAstronomical =
+            SolarSystemSimulater.Inst.GetMaxAccelerationAstron(this._rigidbody.position, astrons);
 
-        if (nearestAstronomical != null)
+        if (maxAccelerationAstronomical.Item1 != null)
         {
-            var nearestAstronomicalDistance =
-                Vector3.SqrMagnitude(nearestAstronomical._rigidbody.position - _rigidbody.position);
-            if (nearestAstronomicalDistance < 2000 * 2000)
+            if (maxAccelerationAstronomical.Item1 != SolarSystemSimulater.Inst.centerTrans)
             {
-                if (SolarSystemSimulater.Inst.centerTrans != nearestAstronomical)
-                {
-                    ChangeInertialFrameOfReference(nearestAstronomical);
-                }
+                ChangeInertialFrameOfReference(maxAccelerationAstronomical.Item1);
             }
-            else
-            {
-                if (SolarSystemSimulater.Inst.centerTrans != SolarSystemSimulater.Inst.defaultTrans)
-                {
-                    ChangeInertialFrameOfReference(SolarSystemSimulater.Inst.defaultTrans);
-                }
-            }
+            
+            // if (maxAccelerationAstronomical.Item1 != SolarSystemSimulater.Inst.centerTrans)
+            // {
+            //     //如果加速度最大的天体不是惯性天体，如果距离大于2000m则切换
+            //     var sqrtDistance =
+            //         Vector3.SqrMagnitude(maxAccelerationAstronomical.Item1._rigidbody.position - _rigidbody.position);
+            //     if (sqrtDistance > 2000 * 2000)
+            //     {
+            //         ChangeInertialFrameOfReference(maxAccelerationAstronomical.Item1);
+            //     }
+            // }
+            // else
+            // {
+            //     var nearestAstronomical = SolarSystemSimulater.Inst.GetNearestDistanceAstron(this._rigidbody.position, astrons);
+            //     //最近的天体不是惯性天体，如果距离少于500m则切换
+            //     if (nearestAstronomical.Item1 != maxAccelerationAstronomical.Item1)
+            //     {
+            //         if (nearestAstronomical.Item2 < 500 * 500)
+            //         {
+            //             ChangeInertialFrameOfReference(maxAccelerationAstronomical.Item1);
+            //         }
+            //     }
+            // }
+            // var nearestAstronomicalDistance =
+            //     Vector3.SqrMagnitude(maxAccelerationAstronomical.Item1._rigidbody.position - _rigidbody.position);
+            // if (nearestAstronomicalDistance < 2000 * 2000)
+            // {
+            //     if (SolarSystemSimulater.Inst.centerTrans != nearestAstronomical)
+            //     {
+            //         ChangeInertialFrameOfReference(nearestAstronomical);
+            //     }
+            // }
+            // else
+            // {
+            //     if (SolarSystemSimulater.Inst.centerTrans != SolarSystemSimulater.Inst.defaultTrans)
+            //     {
+            //         ChangeInertialFrameOfReference(SolarSystemSimulater.Inst.defaultTrans);
+            //     }
+            // }
         }
     }
 

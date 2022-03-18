@@ -64,6 +64,14 @@ public class SolarSystemSimulater:MonoBehaviour
         return selectAstron.GetCurrentVelocity() - centerTrans.GetCurrentVelocity();
     }
 
+    /// <summary>
+    /// 对某点加速度最大的天体
+    /// 综合加速度
+    /// 最大加速度
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <param name="astrons"></param>
+    /// <returns></returns>
     public (Astronomical,Vector3,Vector3) GetMaxAccelerationAstron(Vector3 pos, Astronomical[] astrons)
     {
         var astronAcceleration = Vector3.zero;
@@ -85,5 +93,36 @@ public class SolarSystemSimulater:MonoBehaviour
         }
 
         return (nearestAstronomical,astronAcceleration,maxAcceleration);
+    }
+    
+    
+    /// <summary>
+    /// 对某点距离最近的天体
+    /// 距离平方
+    /// 加速度
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <param name="astrons"></param>
+    /// <returns></returns>
+    public (Astronomical,float,Vector3) GetNearestDistanceAstron(Vector3 pos, Astronomical[] astrons)
+    {
+        var minSqrtDistanceValue = float.MaxValue;
+        var minDistanceAcceleration = Vector3.zero;
+        Astronomical nearestAstronomical = null;
+        foreach (var astronomical in astrons)
+        {
+            var sqrtDistance = Vector3.SqrMagnitude(astronomical._rigidbody.position - pos);
+            if (sqrtDistance < minSqrtDistanceValue)
+            {
+                minSqrtDistanceValue = sqrtDistance;
+                nearestAstronomical = astronomical;
+            }
+        }
+
+        var forceDir = (nearestAstronomical._rigidbody.position - pos).normalized;
+        var acceleration = forceDir * GlobalDefine.G  * nearestAstronomical.Mass / minSqrtDistanceValue;
+        minDistanceAcceleration = acceleration;
+
+        return (nearestAstronomical, minSqrtDistanceValue, minDistanceAcceleration);
     }
 }

@@ -98,9 +98,10 @@ public class Simulater:IDisposable
                     tmp = new AstronomicalData();
                     cacheAstron[id] = tmp;
                 }
-                tmp.initMass = astronomical.Mass;
-                tmp.initCurPoss = astronomical._rigidbody.position;
-                tmp.initCurVelocity = astronomical.InitVelocity;
+                tmp.Mass = astronomical.Mass;
+                tmp.cacheCurPoss = astronomical._rigidbody.position;
+                tmp.cacheCurVelocity = astronomical.GetCurrentVelocity();
+                // tmp.cacheCurAcceleration = astronomical.GetCurAcceleration();
                 astronomicalDatas[astronomicalListCount++] = tmp;
             }
 

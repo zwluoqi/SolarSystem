@@ -7,9 +7,12 @@ public class AstronomicalData
     public float Mass;
     public Vector3 cacheCurPoss;
     public Vector3 cacheCurVelocity;
-    public float initMass;
-    public Vector3 initCurPoss;
-    public Vector3 initCurVelocity;
+    // public Vector3 cacheCurAcceleration;
+    
+    // public float initMass;
+    // public Vector3 initCurPoss;
+    // public Vector3 initCurVelocity;
+    // public Vector3 initCurAcceleration;
         
     public Vector3[] cachePrePoss = new Vector3[1024];
 }
@@ -86,9 +89,10 @@ public class SimulaterThread
                     threadDatas[asIndex] = astronomical;
                 }
                 var mainData = simulater.astronomicalDatas[asIndex];
-                astronomical.Mass = mainData.initMass;
-                astronomical.cacheCurPoss = mainData.initCurPoss;
-                astronomical.cacheCurVelocity = mainData.initCurVelocity;
+                astronomical.Mass = mainData.Mass;
+                astronomical.cacheCurPoss = mainData.cacheCurPoss;
+                astronomical.cacheCurVelocity = mainData.cacheCurVelocity;
+                // astronomical.cacheCurAcceleration = mainData.cacheCurAcceleration;
                 if (centerIndex == asIndex)
                 {
                     center = astronomical;
