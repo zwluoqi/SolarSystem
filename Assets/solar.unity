@@ -206,10 +206,8 @@ MonoBehaviour:
   Radius: 50
   Mass: 3.746671e+13
   InitVelocity: {x: 0, y: -9, z: 0}
-  CurrentVelocity: {x: 0, y: -9, z: 0}
   _color: {r: 0.39695898, g: 1, b: 0.11792451, a: 1}
   surfaceGravity: 1
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &292212377
 SphereCollider:
@@ -353,10 +351,8 @@ MonoBehaviour:
   Radius: 500
   Mass: 5.245339e+16
   InitVelocity: {x: 0, y: 50, z: 0}
-  CurrentVelocity: {x: 0, y: 50, z: 0}
   _color: {r: 0.5235849, g: 1, b: 0.9754322, a: 1}
   surfaceGravity: 14
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &366261814
 SphereCollider:
@@ -500,10 +496,8 @@ MonoBehaviour:
   Radius: 50
   Mass: 3.746671e+13
   InitVelocity: {x: 0, y: 13, z: 0}
-  CurrentVelocity: {x: 0, y: 13, z: 0}
   _color: {r: 0.6226415, g: 0.13803844, b: 0.13803844, a: 1}
   surfaceGravity: 1
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &520447219
 SphereCollider:
@@ -647,10 +641,8 @@ MonoBehaviour:
   Radius: 300
   Mass: 1.0790413e+16
   InitVelocity: {x: 0, y: 100.9, z: 0}
-  CurrentVelocity: {x: 0, y: 100.9, z: 0}
   _color: {r: 0, g: 1, b: 0.681592, a: 1}
   surfaceGravity: 8
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!54 &563350363
 Rigidbody:
@@ -1098,10 +1090,8 @@ MonoBehaviour:
   Radius: 50
   Mass: 3.746671e+13
   InitVelocity: {x: 0, y: 3.5, z: 0}
-  CurrentVelocity: {x: 0, y: 3.5, z: 0}
   _color: {r: 0.6792453, g: 0.6792453, b: 0.6792453, a: 1}
   surfaceGravity: 1
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &707856496
 SphereCollider:
@@ -1379,10 +1369,8 @@ MonoBehaviour:
   Radius: 50
   Mass: 1.12400125e+14
   InitVelocity: {x: 0, y: 46.12, z: 0}
-  CurrentVelocity: {x: 0, y: 46.12, z: 0}
   _color: {r: 0.8018868, g: 0.7301531, b: 0.68462974, a: 1}
   surfaceGravity: 3
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &1014361270
 SphereCollider:
@@ -1528,7 +1516,7 @@ MonoBehaviour:
   - {fileID: 563350362}
   - {fileID: 1621961698}
   simulaterSpeed: 1
-  iterNumbers: 10
+  iterNumbers: 100
   runningIterNumber: 1
   centerTrans: {fileID: 1621961698}
   lineMaterial: {fileID: 2100000, guid: 3698d7f9440754f87bf9895938c57e9f, type: 2}
@@ -1585,10 +1573,8 @@ MonoBehaviour:
   Radius: 300
   Mass: 1.3488015e+16
   InitVelocity: {x: 0, y: 79.5, z: 0}
-  CurrentVelocity: {x: 0, y: 79.5, z: 0}
   _color: {r: 0, g: 0.3296814, b: 1, a: 1}
   surfaceGravity: 10
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &1441396471
 SphereCollider:
@@ -1732,10 +1718,8 @@ MonoBehaviour:
   Radius: 300
   Mass: 1.0790413e+16
   InitVelocity: {x: 0, y: 135, z: 0}
-  CurrentVelocity: {x: 0, y: 135, z: 0}
   _color: {r: 0.9516964, g: 0, b: 1, a: 1}
   surfaceGravity: 8
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!135 &1538766778
 SphereCollider:
@@ -1956,10 +1940,8 @@ MonoBehaviour:
   Radius: 1500
   Mass: 1.686002e+18
   InitVelocity: {x: 0, y: 0, z: 0}
-  CurrentVelocity: {x: 0, y: 0, z: 0}
   _color: {r: 1, g: 0.38385588, b: 0, a: 1}
   surfaceGravity: 50
-  curAcceleration: {x: 0, y: 0, z: 0}
   move: 1
 --- !u!54 &1621961699
 Rigidbody:
@@ -2528,7 +2510,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1837245903}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -19650, y: 0, z: -1773}
+  m_LocalPosition: {x: -19650, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

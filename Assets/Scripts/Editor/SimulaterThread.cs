@@ -49,8 +49,17 @@ public class SimulaterThread
         }
         else
         {
-            var relativeVolocity = self.cacheCurVelocity-
+            Vector3 relativeVolocity;
+            if (center != null)
+            {
+                relativeVolocity = self.cacheCurVelocity-
                                    center.cacheCurVelocity;
+            }
+            else
+            {
+                relativeVolocity = self.cacheCurVelocity;
+            }
+            
             self.cacheCurPoss += relativeVolocity * fixedTime;
         }
     }
@@ -59,7 +68,7 @@ public class SimulaterThread
     {
         int astronomicalCount = 0;
         int iterNumbers = 0;
-        int simulaterSpeed = 0;
+        float simulaterSpeed = 0;
         int centerIndex = 0;
         lock (_threadObj)
         {
@@ -67,7 +76,7 @@ public class SimulaterThread
             iterNumbers = simulater.iterNumbers;
             simulaterSpeed = simulater.simulaterSpeed;
             centerIndex = simulater.centerIndex;
-            
+            center = null;
             for (int asIndex = 0; asIndex < astronomicalCount; asIndex++)
             {
                 var astronomical = threadDatas[asIndex];
@@ -91,6 +100,12 @@ public class SimulaterThread
         
         for (int i = 0; i < 1024; i++)
         {
+            for (int asIndex = 0; asIndex < astronomicalCount; asIndex++)
+            {
+                var astronomical = threadDatas[asIndex];
+                SetPosition(astronomical, i);
+            }
+            
             for (int j = 0; j < iterNumbers; j++)
             {
                 for (int asIndex = 0; asIndex < astronomicalCount; asIndex++)
@@ -104,12 +119,6 @@ public class SimulaterThread
                     var astronomical = threadDatas[asIndex];
                     UpdatePosition(astronomical, simulaterSpeed * GlobalDefine.deltaTime);
                 }
-            }
-
-            for (int asIndex = 0; asIndex < astronomicalCount; asIndex++)
-            {
-                var astronomical = threadDatas[asIndex];
-                SetPosition(astronomical, i);
             }
         }
 

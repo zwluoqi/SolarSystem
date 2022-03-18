@@ -13,7 +13,7 @@ public class Simulater:IDisposable
     public static Simulater Inst = new Simulater();
 
     public int iterNumbers;
-    public int simulaterSpeed;
+    public float simulaterSpeed;
     public int centerIndex;
     private Dictionary<int,AstronomicalData> cacheAstron = new Dictionary<int,AstronomicalData>(128);
 
@@ -38,7 +38,7 @@ public class Simulater:IDisposable
         while (threadRunning)
         {
             simulaterThread.ThreadUpdate(this);
-            Thread.Sleep(60);
+            // Thread.Sleep(60);
         }
         Debug.LogError("thread done");
     }
@@ -78,7 +78,13 @@ public class Simulater:IDisposable
         lock (simulaterThread._threadObj)
         {
             astronomicalListCount = 0;
-            var centerId = SolarSystemSimulater.Inst.centerTrans.GetInstanceID();
+            int centerId = -1;
+            if (SolarSystemSimulater.Inst.centerTrans != null)
+            {
+                centerId = SolarSystemSimulater.Inst.centerTrans.GetInstanceID();
+            }
+
+            centerIndex = -1;
             foreach (var astronomical in _astronomicals)
             {
                 var id = astronomical.GetInstanceID();
@@ -94,18 +100,20 @@ public class Simulater:IDisposable
                 }
                 tmp.initMass = astronomical.Mass;
                 tmp.initCurPoss = astronomical._rigidbody.position;
-                tmp.initCurVelocity = astronomical.CurrentVelocity;
+                tmp.initCurVelocity = astronomical.InitVelocity;
                 astronomicalDatas[astronomicalListCount++] = tmp;
-                
-                
-                Handles.color = astronomical._color;
-                Handles.DrawPolyLine(cacheAstron[id].cachePrePoss);
             }
 
             iterNumbers = SolarSystemSimulater.Inst.iterNumbers;
             simulaterSpeed = SolarSystemSimulater.Inst.simulaterSpeed;
         }
-        
+
+        foreach (var astronomical in _astronomicals)
+        {
+            var id = astronomical.GetInstanceID();
+            Handles.color = astronomical._color;
+            Handles.DrawPolyLine(cacheAstron[id].cachePrePoss);
+        }
     }
     
    

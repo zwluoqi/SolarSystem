@@ -136,10 +136,10 @@ public class SimpleSpaceShip:MonoBehaviour
 
     private void ChangeInertialFrameOfReference(Astronomical nearestAstronomical)
     {
-        var BeforeVelocity = SolarSystemSimulater.Inst.centerTrans.CurrentVelocity; 
+        var BeforeVelocity = SolarSystemSimulater.Inst.centerTrans.GetCurrentVelocity(); 
         //被天体捕获,调整惯性参考系
         SolarSystemSimulater.Inst.centerTrans = nearestAstronomical;
-        var AfterVelocity = SolarSystemSimulater.Inst.centerTrans.CurrentVelocity;
+        var AfterVelocity = SolarSystemSimulater.Inst.centerTrans.GetCurrentVelocity();
         //调整相对速度
         _rigidbody.AddForce((BeforeVelocity - AfterVelocity), ForceMode.VelocityChange);
         Debug.LogError("调整惯性参考系到:"+nearestAstronomical.name);

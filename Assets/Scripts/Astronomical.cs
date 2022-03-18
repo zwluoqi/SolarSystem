@@ -11,13 +11,14 @@ public class Astronomical : MonoBehaviour
     public float Radius = 1500;
     
     public float Mass =1;
+
     public Vector3 InitVelocity;
-    public Vector3 CurrentVelocity;
+
     public Color _color = Color.red;
     public float surfaceGravity = 10;
-    public Vector3 curAcceleration;
-    private Vector3 savePos;
-    private Vector3 saveVelocity;
+    
+    private Vector3 curAcceleration;
+    private Vector3 CurrentVelocity;
 
     private MaterialPropertyBlock _materialPropertyBlock;
 
@@ -40,6 +41,15 @@ public class Astronomical : MonoBehaviour
         _trailRenderer.startColor = _color * 0.7f;
         _trailRenderer.endColor = _color * 0.3f;
         _trailRenderer.sharedMaterial = SolarSystemSimulater.Inst.lineMaterial;
+    }
+
+    public Vector3 GetCurrentVelocity()
+    {
+        return CurrentVelocity;
+    }
+    public Vector3 GetCurAcceleration()
+    {
+        return curAcceleration;
     }
     
     public void UpdateVelocity(Astronomical[] astronomicals, float fixedTime)
@@ -76,7 +86,12 @@ public class Astronomical : MonoBehaviour
         }
         else
         {
-            var relativeVelocity = (CurrentVelocity - SolarSystemSimulater.Inst.centerTrans.CurrentVelocity);
+            Vector3 relativeVelocity = CurrentVelocity;
+            if (SolarSystemSimulater.Inst.centerTrans != null)
+            {
+                 relativeVelocity -=  SolarSystemSimulater.Inst.centerTrans.GetCurrentVelocity();
+            }
+
             _rigidbody.position += relativeVelocity * fixedTime;
         }
     }
@@ -93,5 +108,66 @@ public class Astronomical : MonoBehaviour
         GetComponent<Renderer>().SetPropertyBlock(_materialPropertyBlock);
         Mass = surfaceGravity * Radius * Radius / GlobalDefine.G;
         _rigidbody = GetComponent<Rigidbody>();
+        if (!Application.isPlaying)
+        {
+            CurrentVelocity = InitVelocity;
+        }
+    }
+
+    [ContextMenu("三体L1点")]
+    void SetThreeL1Post()
+    {
+        var astronomicals = GameObject.FindObjectsOfType<Astronomical>();
+        List<Astronomical> tmps = new List<Astronomical>();
+        foreach (var astronomical in astronomicals)
+        {
+            if (astronomical != this)
+            {
+                tmps.Add(astronomical);
+            }
+        }
+
+        var p1 = tmps[0].transform.position;
+        var p2 = tmps[1].transform.position;
+        int minIndex = 0;
+        if (tmps[0].Mass > tmps[1].Mass)
+        {
+            minIndex = 1;
+        }
+        else
+        {
+            minIndex = 0;
+        }
+        var M1 = tmps[0].Mass > tmps[1].Mass ? tmps[0].Mass : tmps[1].Mass;
+        var M2 = tmps[0].Mass > tmps[1].Mass ? tmps[1].Mass : tmps[0].Mass;
+        var R = Vector3.Distance(p1, p2);
+
+        var r = R * Mathf.Pow(M2 / (3 * M1), 1 / 3);
+        this.transform.position = (p2 - p1).normalized * r + tmps[minIndex].transform.position;
+    }
+
+    [ContextMenu("三体L4点")]
+    void SetThreeL4Post()
+    {
+        var astronomicals = GameObject.FindObjectsOfType<Astronomical>();
+        List<Astronomical> tmps = new List<Astronomical>();
+        foreach (var astronomical in astronomicals)
+        {
+            if (astronomical != this)
+            {
+                tmps.Add(astronomical);
+            }
+        }
+
+        var p1 = tmps[0].transform.position;
+        var p2 = tmps[1].transform.position;
+        var z = p1.z;
+        var center = (p1 + p2) / 2;
+        var dir = (p2 - p1);
+        var up = Vector3.Cross(dir.normalized, Vector3.forward);
+        var p3 = center + up * dir.magnitude * Mathf.Sin(60*Mathf.Deg2Rad);
+        this.transform.position = p3;
+        
+        
     }
 }
