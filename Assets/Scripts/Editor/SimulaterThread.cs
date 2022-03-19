@@ -37,8 +37,8 @@ public class SimulaterThread
             {
                 var sqrtDistance = Vector3.SqrMagnitude(astronomical.cacheCurPoss- self.cacheCurPoss);
                 var forceDir = (astronomical.cacheCurPoss- self.cacheCurPoss).normalized;
-                var force = forceDir * GlobalDefine.G * self.Mass * astronomical.Mass / sqrtDistance;
-                var acceleration = force / self.Mass;
+                var force = forceDir * GlobalDefine.G  * astronomical.Mass / sqrtDistance;
+                var acceleration = force ;
                 self.cacheCurVelocity += acceleration * fixedTime;
             }
         }

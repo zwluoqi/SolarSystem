@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+[RequireComponent(typeof(SkyCell))]
 public class SolarSystemSimulater:MonoBehaviour
 {
     public Astronomical[] _astronomicals;
@@ -19,7 +20,22 @@ public class SolarSystemSimulater:MonoBehaviour
 
     public Material lineMaterial;
     
-    public bool debugShow = true;
+    [Header("预览飞行轨迹")]
+    public bool showAstronomicalPreview = true;
+    [Header("显示引力场")]
+    public bool showGravity = false;
+    [Header("显示距离")]
+    public bool showDistance = false;
+
+    [Header("移动")]
+    public bool move = true;
+
+    [Header("公转最大引力场加速率")]
+    public float minGravityScale = 0.05f;
+    [Header("公转最小引力场加速率")]
+    public float maxGravityScale = 0.005f;
+
+    
     public static SolarSystemSimulater _Inst;
     public static SolarSystemSimulater Inst
     {
@@ -38,24 +54,47 @@ public class SolarSystemSimulater:MonoBehaviour
     {
         defaultTrans = centerTrans;
         Time.fixedDeltaTime = GlobalDefine.deltaTime;
+        OnFixedUpdate += FixedUpdate0;
     }
-    
+
+    private void Start()
+    {
+        //运行时恢复原始速度
+        simulaterSpeed = 1;
+        runningIterNumber = 1;
+    }
+
+    private void OnDestroy()
+    {
+        OnFixedUpdate -= FixedUpdate0;
+    }
+
     private void FixedUpdate()
     {
+        if (!move)
+        {
+            return;
+        }
         _astronomicals = FindObjectsOfType<Astronomical>();
-
 
         for (int i = 0; i < runningIterNumber; i++)
         {
-            foreach (var astronomical in _astronomicals)
-            {
-                astronomical.UpdateVelocity(_astronomicals,  simulaterSpeed* GlobalDefine.deltaTime);
-            }
+            OnFixedUpdate?.Invoke(simulaterSpeed* GlobalDefine.deltaTime);
+        }
+    }
 
-            foreach (var astronomical in _astronomicals)
-            {
-                astronomical.UpdatePosition( simulaterSpeed*GlobalDefine.deltaTime);
-            }
+    public Action<float> OnFixedUpdate;
+
+    private void FixedUpdate0(float deltaTime)
+    {
+        foreach (var astronomical in _astronomicals)
+        {
+            astronomical.UpdateVelocity(_astronomicals, deltaTime );
+        }
+
+        foreach (var astronomical in _astronomicals)
+        {
+            astronomical.UpdatePosition( deltaTime);
         }
     }
 
@@ -80,8 +119,12 @@ public class SolarSystemSimulater:MonoBehaviour
         Astronomical nearestAstronomical = null;
         foreach (var astronomical in astrons)
         {
-            var sqrtDistance = Vector3.SqrMagnitude(astronomical._rigidbody.position - pos);
-            var forceDir = (astronomical._rigidbody.position - pos).normalized;
+            var sqrtDistance = Vector3.SqrMagnitude(astronomical.transform.position - pos);
+            if (sqrtDistance < Mathf.Epsilon)
+            {
+                continue;
+            }
+            var forceDir = (astronomical.transform.position - pos).normalized;
             var acceleration = forceDir * GlobalDefine.G  * astronomical.Mass / sqrtDistance;
             astronAcceleration += acceleration;
             if (acceleration.magnitude > maxAccelerationValue)
@@ -111,7 +154,7 @@ public class SolarSystemSimulater:MonoBehaviour
         Astronomical nearestAstronomical = null;
         foreach (var astronomical in astrons)
         {
-            var sqrtDistance = Vector3.SqrMagnitude(astronomical._rigidbody.position - pos);
+            var sqrtDistance = Vector3.SqrMagnitude(astronomical.transform.position - pos);
             if (sqrtDistance < minSqrtDistanceValue)
             {
                 minSqrtDistanceValue = sqrtDistance;
@@ -119,7 +162,7 @@ public class SolarSystemSimulater:MonoBehaviour
             }
         }
 
-        var forceDir = (nearestAstronomical._rigidbody.position - pos).normalized;
+        var forceDir = (nearestAstronomical.transform.position - pos).normalized;
         var acceleration = forceDir * GlobalDefine.G  * nearestAstronomical.Mass / minSqrtDistanceValue;
         minDistanceAcceleration = acceleration;
 

@@ -17,17 +17,23 @@ public class SpaceShipUIInteraction : MonoBehaviour
     public TMP_Text hSpeed;
     public TMP_Text vSpeed;
 
+    public TMP_Text spaceShipEngineSpeed;
+    public Toggle _Toggle;
     public Astronomical selectAstron;
     public SimpleSpaceShip spaceShip;
 
     public Vector2 canveSize;
     private void Start()
     {
-        TestCollider2D.onGlobalClick += delegate(GameObject go)
+        Interac3DObject.onGlobalClick += delegate(GameObject go)
         {
             selectAstron = go.GetComponent<Astronomical>();
         };
         canveSize = GetComponent<RectTransform>().sizeDelta;
+        _Toggle.onValueChanged.AddListener(delegate(bool arg0)
+        {
+            spaceShip.Braking(arg0);
+        });
     }
 
     // Update is called once per frame
@@ -37,20 +43,20 @@ public class SpaceShipUIInteraction : MonoBehaviour
         if (selectAstron != null)
         {
             info.gameObject.SetActive(true);
-            var dir = (selectAstron._rigidbody.position - spaceShip._rigidbody.position);
+            var dir = (selectAstron.transform.position - spaceShip._rigidbody.position);
             var distance = dir.magnitude - selectAstron.Radius-spaceShip.transform.localScale.x*0.5;
             var astronSpeed = SolarSystemSimulater.Inst.GetRelativeSpeed(selectAstron);
             //天体相对飞船的速度
             var relativeSpeed = astronSpeed - spaceShip._rigidbody.velocity;
 
 
-            var spaceShipUp = spaceShip._rigidbody.rotation * Vector3.up;
-            var spaceShipRight = spaceShip._rigidbody.rotation * Vector3.right;
-            var spaceShipForward = spaceShip._rigidbody.rotation * Vector3.forward;
+            // var spaceShipUp = spaceShip._rigidbody.rotation * Vector3.up;
+            // var spaceShipRight = spaceShip._rigidbody.rotation * Vector3.right;
+            // var spaceShipForward = spaceShip._rigidbody.rotation * Vector3.forward;
             
-            var upSpeed =  Vector3.Project( relativeSpeed,spaceShipUp);
-            var rightSpeed = Vector3.Project( relativeSpeed,spaceShipRight);
-            var forwardSpeed = Vector3.Project( relativeSpeed,spaceShipForward);
+            var upSpeed =  Vector3.Project( relativeSpeed,spaceShip.transform.up);
+            var rightSpeed = Vector3.Project( relativeSpeed,spaceShip.transform.right);
+            var forwardSpeed = Vector3.Project( relativeSpeed,spaceShip.transform.forward);
 
             var isUp = Vector3.Dot(spaceShip.transform.up, upSpeed)>0;
             var isRight = Vector3.Dot(spaceShip.transform.right, rightSpeed)>0;
@@ -120,6 +126,27 @@ public class SpaceShipUIInteraction : MonoBehaviour
         {
             info.gameObject.SetActive(false);
         }
+        ProcessSpaceShipInfo();
+    }
+
+    private void ProcessSpaceShipInfo()
+    {
+        // var spaceShipUp = spaceShip._rigidbody.rotation * Vector3.up;
+        // var spaceShipRight = spaceShip._rigidbody.rotation * Vector3.right;
+        // var spaceShipForward = spaceShip._rigidbody.rotation * Vector3.forward;
+        //     
+        // var upSpeed =  Vector3.Project( spaceShip.curEngineAcceleration,spaceShipUp);
+        // var rightSpeed = Vector3.Project( spaceShip.curEngineAcceleration,spaceShipRight);
+        // var forwardSpeed = Vector3.Project( spaceShip.curEngineAcceleration,spaceShipForward);
+        // var isUp = Vector3.Dot(upSpeed, spaceShipUp) >= 0;
+        // var isRight = Vector3.Dot(upSpeed, spaceShipUp) >= 0;
+        // var isForward = Vector3.Dot(upSpeed, spaceShipUp) >= 0;
+        //
+        // var rightDesc = (isRight ? "+" : "-") +((int)rightSpeed.magnitude);
+        // var upDesc = (isUp ? "+" : "-") +((int)upSpeed.magnitude);
+        // var forwardDesc = (isForward ? "+" : "-") +((int)forwardSpeed.magnitude);
+        //  spaceShipEngineSpeed.text =
+        //                              $"引擎加速度:{rightDesc},{upDesc},{forwardDesc}";
     }
 
     private string GetSpeedDesc(Vector3 crossSpeed)

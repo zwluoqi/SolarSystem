@@ -6,7 +6,7 @@ using UnityEngine;
 public class SimpleTarget : MonoBehaviour
 {
     public float distance = 100;
-    public Rigidbody target;
+    public Transform target;
 
     public float smoothSpeed = 20;
     // Start is called before the first frame update
@@ -19,12 +19,13 @@ public class SimpleTarget : MonoBehaviour
     void LateUpdate()
     {
         this.transform.LookAt(target.transform);
-        this.transform.position = Vector3.Lerp(target.position, target.position - Vector3.forward * distance,
-            Time.deltaTime * smoothSpeed);
+        this.transform.position = target.position - Vector3.forward * distance;
+        // this.transform.position = Vector3.Lerp(target.position, target.position - Vector3.forward * distance,
+        //     Time.deltaTime * smoothSpeed);
     }
 
-    private void OnValidate()
-    {
-        LateUpdate();
-    }
+    // private void OnValidate()
+    // {
+    //     LateUpdate();
+    // }
 }

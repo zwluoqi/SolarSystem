@@ -69,10 +69,7 @@ public class Simulater:IDisposable
     
     public void Update()
     {
-        if (!SolarSystemSimulater.Inst.debugShow)
-        {
-            return;
-        }
+        
         var _astronomicals = GameObject.FindObjectsOfType<Astronomical>();
         
         lock (simulaterThread._threadObj)
@@ -99,7 +96,7 @@ public class Simulater:IDisposable
                     cacheAstron[id] = tmp;
                 }
                 tmp.Mass = astronomical.Mass;
-                tmp.cacheCurPoss = astronomical._rigidbody.position;
+                tmp.cacheCurPoss = astronomical.transform.position;
                 tmp.cacheCurVelocity = astronomical.GetCurrentVelocity();
                 // tmp.cacheCurAcceleration = astronomical.GetCurAcceleration();
                 astronomicalDatas[astronomicalListCount++] = tmp;
@@ -109,6 +106,10 @@ public class Simulater:IDisposable
             simulaterSpeed = SolarSystemSimulater.Inst.simulaterSpeed;
         }
 
+        if (!SolarSystemSimulater.Inst.showAstronomicalPreview)
+        {
+            return;
+        }
         foreach (var astronomical in _astronomicals)
         {
             var id = astronomical.GetInstanceID();

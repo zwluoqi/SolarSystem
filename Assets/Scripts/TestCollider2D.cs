@@ -20,13 +20,13 @@ public class TestCollider2D : MonoBehaviour,IPointerClickHandler,IPointerEnterHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.LogWarning(this.name+" enter");
+        // Debug.LogWarning(this.name+" enter");
         onPress?.Invoke(true,eventData.position);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.LogWarning(this.name+" exit");
+        // Debug.LogWarning(this.name+" exit");
         onPress?.Invoke(false,eventData.position);
 
     }

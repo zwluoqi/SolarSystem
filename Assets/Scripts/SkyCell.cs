@@ -1,9 +1,6 @@
 using UnityEngine;
 
-namespace DefaultNamespace
+public class SkyCell : MonoBehaviour
 {
-    public class SkyCell : MonoBehaviour
-    {
-        
-    }
+    public static bool ShowAccelration { get; set; }
 }

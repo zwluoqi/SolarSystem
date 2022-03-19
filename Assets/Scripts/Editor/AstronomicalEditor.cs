@@ -19,7 +19,7 @@ public class AstronomicalEditor : UnityEditor.Editor
     }
 
     public static float angle = 0;
-    public static float distance = 1000;
+    // public static float distance = 1000;
     // public static float speed = 0;
     public bool show = false;
     public bool showSpeed = false;
@@ -31,7 +31,10 @@ public class AstronomicalEditor : UnityEditor.Editor
         // show = EditorGUILayout.Toggle("三体稳定运动", show);
         showSpeed = EditorGUILayout.Toggle("切线速度调整", showSpeed);
         // showNormalSpeed = EditorGUILayout.Toggle("正常速度调整", showNormalSpeed);
-        EditorGUILayout.Vector3Field("引力加速度:",my.GetCurAcceleration());
+        // EditorGUILayout.Vector3Field("引力加速度:",my.GetCurAcceleration());
+        EditorGUILayout.Vector3Field("当前速度:",my.GetCurrentVelocity());
+        EditorGUILayout.FloatField("公转周期:",my.GetCircleTime());
+
         //
         var astronomicals = GameObject.FindObjectsOfType<Astronomical>();
         //
@@ -94,7 +97,26 @@ public class AstronomicalEditor : UnityEditor.Editor
         //
         //
         //
+        centerObj = (Astronomical)EditorGUILayout.ObjectField(centerObj, typeof(Astronomical));
+        if (GUILayout.Button("公转速度"))
+        {
+            var sun = centerObj;
+            if (sun == null)
+            {
+                return;
+            }
+            SerializedObject serializedRendererFeaturesEditor = this.serializedObject;
+            SerializedProperty nameProperty = serializedRendererFeaturesEditor.FindProperty("InitVelocity");
+
+            
+            nameProperty.vector3Value = sun.GetACircleInitVelocity(my.transform.position);
+            
+            serializedRendererFeaturesEditor.ApplyModifiedProperties();
+            serializedObject.ApplyModifiedProperties();
+        }
     }
+
+    public Astronomical centerObj;
     
     public void OnSceneGUI()
     {
@@ -103,28 +125,21 @@ public class AstronomicalEditor : UnityEditor.Editor
         //用于在场景中显示设置的名字
         
         Handles.Label(my.transform.position+new Vector3(0,my.Radius,0),my.name,guiSkin.label);
-        var _astronomicals = FindObjectsOfType<Astronomical>();
-
-        foreach (var astronomical in _astronomicals)
-        {
-            if (astronomical != my)
-            {
-                var sqrMagnitude = Vector3.SqrMagnitude(astronomical.transform.position- my.transform.position);
-                Handles.DrawLine(my.transform.position,astronomical.transform.position);
-                var centerPos = (my.transform.position + astronomical.transform.position) * 0.5f;
-                
-                var acceleration = GlobalDefine.G * astronomical.Mass / sqrMagnitude;
-                Handles.Label(centerPos, Mathf.Sqrt(sqrMagnitude) + "M"+",A:"+acceleration,guiSkin.label);
-            }
-        }
-
-        if (SolarSystemSimulater.Inst != null)
-        {
-            Simulater.Inst.Update();
-        }
-        
-        Handles.color = Color.yellow;
+        Handles.color = Color.red;
         Handles.DrawLine(my.transform.position,my.GetCurrentVelocity().normalized*my.Radius*1.5f+my.transform.position);
+
+        if (SolarSystemSimulater.Inst.showGravity)
+        {
+            var gravityCircleMin = my.surfaceGravity * SolarSystemSimulater.Inst.minGravityScale;
+            var gravityCircleMax = my.surfaceGravity * SolarSystemSimulater.Inst.maxGravityScale;
+            //Mass = surfaceGravity * Radius * Radius / GlobalDefine.G;
+            var circleMin = my.Radius * Mathf.Sqrt(my.surfaceGravity / gravityCircleMin);
+            var circleMax = my.Radius * Mathf.Sqrt(my.surfaceGravity / gravityCircleMax);
+
+            Handles.color =my._color;
+            Handles.DrawWireDisc(my.transform.position, Vector3.forward, circleMin);
+            Handles.DrawWireDisc(my.transform.position, Vector3.forward, circleMax);
+        }
     }
     
 }
