@@ -66,8 +66,8 @@ public class SimpleSpaceShip:MonoBehaviour
         astronAcceleration = Vector3.zero;
         foreach (var astronomical in astrons)
         {
-            var sqrtDistance = Vector3.SqrMagnitude(astronomical.transform.position - _rigidbody.position);
-            var forceDir = (astronomical.transform.position - _rigidbody.position).normalized;
+            var sqrtDistance = Vector3.SqrMagnitude(astronomical._rigidbody.position - _rigidbody.position);
+            var forceDir = (astronomical._rigidbody.position - _rigidbody.position).normalized;
             var acceleration = forceDir * GlobalDefine.G  * astronomical.Mass / sqrtDistance;
             astronAcceleration += acceleration;
         }
@@ -103,16 +103,16 @@ public class SimpleSpaceShip:MonoBehaviour
             _rigidbody.AddForce(moveDir * engineAcceleration, ForceMode.Acceleration);
         }
 
-        var maxAccelerationAstronomical =
-            SolarSystemSimulater.Inst.GetMaxAccelerationAstron(this._rigidbody.position, astrons);
-
-        if (maxAccelerationAstronomical.Item1 != null)
-        {
-            if (maxAccelerationAstronomical.Item1 != SolarSystemSimulater.Inst.centerTrans)
-            {
-                ChangeInertialFrameOfReference(maxAccelerationAstronomical.Item1);
-            }
-        }
+        // var maxAccelerationAstronomical =
+        //     SolarSystemSimulater.Inst.GetMaxAccelerationAstron(this._rigidbody.position, astrons);
+        //
+        // if (maxAccelerationAstronomical.Item1 != null)
+        // {
+        //     if (maxAccelerationAstronomical.Item1 != SolarSystemSimulater.Inst.centerTrans)
+        //     {
+        //         ChangeInertialFrameOfReference(maxAccelerationAstronomical.Item1);
+        //     }
+        // }
     }
 
     private void ChangeInertialFrameOfReference(Astronomical nearestAstronomical)

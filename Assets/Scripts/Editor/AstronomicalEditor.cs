@@ -29,7 +29,6 @@ public class AstronomicalEditor : UnityEditor.Editor
         base.OnInspectorGUI();
         
         // show = EditorGUILayout.Toggle("三体稳定运动", show);
-        showSpeed = EditorGUILayout.Toggle("切线速度调整", showSpeed);
         // showNormalSpeed = EditorGUILayout.Toggle("正常速度调整", showNormalSpeed);
         // EditorGUILayout.Vector3Field("引力加速度:",my.GetCurAcceleration());
         EditorGUILayout.Vector3Field("当前速度:",my.GetCurrentVelocity());
@@ -63,37 +62,29 @@ public class AstronomicalEditor : UnityEditor.Editor
         //
         // }
         // else
+        showSpeed = EditorGUILayout.Toggle("相对调整", showSpeed);
         if (showSpeed)
         {
-        
-            var (nearest, acc, maxAcc) =
-                SolarSystemSimulater.Inst.GetMaxAccelerationAstron(my.transform.position, astronomicals);
-        
-            var tangentSpeed = EditorGUILayout.FloatField("切线速度", my.InitVelocity.magnitude);
-            angle = EditorGUILayout.FloatField("角度", angle);
-            
-        
-            var rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            var dir2near = nearest.transform.position - my.transform.position;
-        
-            var rotationDir = rotation * dir2near;
-            
-            var tangentDir = Vector3.Cross( Vector3.forward,rotationDir);
-        
-            
-            
-            my.InitVelocity = tangentDir.normalized * tangentSpeed;
-            
-            // my.InitVelocity = speed;
-            // tmps[0].InitVelocity = -my.InitVelocity * 0.5f;
-            // tmps[1].InitVelocity = -my.InitVelocity * 0.5f;
+            var relativeSpeed = my.InitVelocity - my.circleAstronomical.InitVelocity;
+            var tangentSpeed = EditorGUILayout.FloatField("切线速度", relativeSpeed.magnitude);
+            SerializedObject serializedRendererFeaturesEditor = this.serializedObject;
+            SerializedProperty nameProperty = serializedRendererFeaturesEditor.FindProperty("InitVelocity");
+
+            if (tangentSpeed != 0)
+            {
+                relativeSpeed = relativeSpeed.normalized * tangentSpeed;
+                nameProperty.vector3Value = relativeSpeed + my.circleAstronomical.InitVelocity;
+            }
+
+            serializedRendererFeaturesEditor.ApplyModifiedProperties();
+            serializedObject.ApplyModifiedProperties();
         }
         // else if (showNormalSpeed)
         // {
         //     // my.InitVelocity = speed;
         //     tmps[0].InitVelocity = -my.InitVelocity * 0.5f;
         //     tmps[1].InitVelocity = -my.InitVelocity * 0.5f;
-        // }
+        // }切线
         //
         //
         //
@@ -125,6 +116,12 @@ public class AstronomicalEditor : UnityEditor.Editor
         //用于在场景中显示设置的名字
         
         Handles.Label(my.transform.position+new Vector3(0,my.Radius,0),my.name,guiSkin.label);
+        if (my.circleAstronomical != null)
+        {
+            Handles.Label(my.transform.position + new Vector3(0, my.circleAstronomical.Radius, 0),
+                my.circleAstronomical.GetRelativeSpeed(my.transform.position) + "", guiSkin.label);
+        }
+
         Handles.color = Color.red;
         Handles.DrawLine(my.transform.position,my.GetCurrentVelocity().normalized*my.Radius*1.5f+my.transform.position);
 

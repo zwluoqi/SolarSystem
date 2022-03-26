@@ -27,7 +27,7 @@ public class AutoGenerateSolarSystem:MonoBehaviour
         [Header("地球数量")]
         public int numberEarth = 9;
 
-        public bool moonNormalFollow = false;
+        public bool moonNormalFollow = true;
 
         public static AutoGenerateSolarSystem _Inst;
         public static AutoGenerateSolarSystem Inst
@@ -53,6 +53,7 @@ public class AutoGenerateSolarSystem:MonoBehaviour
                 sun.transform.position = Vector3.zero;
                 sun.Radius = randomSunRadius;
                 sun.surfaceGravity = randomSunSurfaceGravity;
+                // sun.InitVelocity = MathUtil.RandomVector() * 100;
                 var vec = (MathUtil.RandomVector());
                 sun._color = new Color(Mathf.Abs(vec.x), Mathf.Abs(vec.y), Mathf.Abs(vec.z));
                 sun.OnValidate();
@@ -90,10 +91,10 @@ public class AutoGenerateSolarSystem:MonoBehaviour
                 Debug.LogWarning("generator done");
         }
 
-        private Astronomical CreateChildAstronomical(Astronomical sun,float circleMin,ref float accumulativeRadius,int i,Vector3 normal,int recursionCount)
+        private Astronomical CreateChildAstronomical(Astronomical parent,float circleMin,ref float accumulativeRadius,int i,Vector3 normal,int recursionCount)
         {
                 var radiusScale = Random.Range(earthRadiusScale.x, earthRadiusScale.y);
-                var autoRadius = sun.Radius * radiusScale;
+                var autoRadius = parent.Radius * radiusScale;
                 var subCircleMin = autoRadius * Mathf.Sqrt(1/SolarSystemSimulater.Inst.minGravityScale);
                 var subCircleMax = autoRadius * Mathf.Sqrt(1/SolarSystemSimulater.Inst.maxGravityScale);
                 accumulativeRadius += subCircleMax * Random.Range(3f, 6f);
@@ -106,9 +107,9 @@ public class AutoGenerateSolarSystem:MonoBehaviour
                 randomDir.z *= axis.z;
 
                 randomDir = randomDir.normalized;
-                var pos = sun.transform.position + randomDir * distance;
+                var pos = parent.transform.position + randomDir * distance;
                         
-                var curGravityBySun = sun.Mass * GlobalDefine.G / (distance*distance);
+                var curGravityBySun = parent.Mass * GlobalDefine.G / (distance*distance);
                 //地球表面引力远大于恒星给的引力
                 var autoEarthGravity = curGravityBySun * 10;
 
@@ -122,17 +123,17 @@ public class AutoGenerateSolarSystem:MonoBehaviour
                 earth.transform.position = pos;
                 earth.Radius = autoRadius;
                 earth.surfaceGravity = autoEarthGravity;
-                earth.circleAstronomical = sun;
+                earth.circleAstronomical = parent;
                 var vecColor = (MathUtil.RandomVector());
                 earth._color = new Color(Mathf.Abs(vecColor.x), Mathf.Abs(vecColor.y), Mathf.Abs(vecColor.z));
                 if (axis.y==0&&axis.z==0)
                 {
-                        earth.InitVelocity = sun.GetUpCircleInitVelocity(earth.transform.position,Vector3.forward);
+                        earth.InitVelocity = parent.GetUpCircleInitVelocity(earth.transform.position,Vector3.forward);
                 }
                 else
                 {
 
-                        earth.InitVelocity = sun.GetACircleInitVelocity(earth.transform.position);
+                        earth.InitVelocity = parent.GetACircleInitVelocity(earth.transform.position);
                 }
 
                 
