@@ -1,6 +1,7 @@
 using System;
 using Planet.Setting;
 using UnityEditor;
+using UnityEngine;
 
 namespace Planet
 {
@@ -9,6 +10,7 @@ namespace Planet
     {
         private PlanetMesh _planetMesh;
         private Editor shapeEditor;
+        private Editor colorEditor;
 
         private void OnEnable()
         {
@@ -28,10 +30,12 @@ namespace Planet
             }
 
             DrawSettingEditor(_planetMesh.ShapeSettting, _planetMesh.OnShapeSetttingUpdated,
-                ref _planetMesh.shpaeSetttingsFoldOut, ref shapeEditor);
+                ref _planetMesh.shapeSetttingsFoldOut, ref shapeEditor);
+            DrawSettingEditor(_planetMesh.ColorSettting, _planetMesh.OnColorSetttingUpdated,
+                ref _planetMesh.colorSetttingsFoldOut, ref colorEditor);
         }
 
-        private void DrawSettingEditor(ShapeSettting planetMeshShapeSettting, Action onShapeSetttingUpdated, ref bool planetMeshShpaeSetttingsFoldOut, ref Editor editor)
+        private void DrawSettingEditor(ScriptableObject planetMeshShapeSettting, Action onShapeSetttingUpdated, ref bool planetMeshShpaeSetttingsFoldOut, ref Editor editor)
         {
             if (planetMeshShapeSettting != null)
             {

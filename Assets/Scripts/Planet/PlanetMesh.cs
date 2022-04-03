@@ -7,55 +7,114 @@ using UnityEngine;
 
 public class PlanetMesh : MonoBehaviour
 {
+    readonly Vector3[] faceNormal = {Vector3.forward, Vector3.back, Vector3.right, Vector3.left, Vector3.up, Vector3.down};
+
+    
     [Range(2,128)]
     public int resolution = 4;
 
-    [Range(0.1f,10000)]
-    public float radius=1;
-
     public ShapeSettting ShapeSettting;
+    public ColorSettting ColorSettting;
     
-    Vector3[] faceNormal = {Vector3.forward, Vector3.back, Vector3.right, Vector3.left, Vector3.up, Vector3.down};
-    private FaceGenerate[] faceGenerates;
-    private MeshFilter[] _meshFilterss;
+    public MeshFilter[] _meshFilterss;
 
-    ShapeGenerate ShapeGenerate;
+    private Material _material;
+    
+    [NonSerialized]
+    public bool shapeSetttingsFoldOut;
+    [NonSerialized]
+    public bool colorSetttingsFoldOut;
+    
+    private FaceGenerate[] faceGenerates;
+
+    private ColorGenerate _colorGenerate;
+    private ShapeGenerate _shapeGenerate;
+
     public void Generate()
     {
+        InitedMeshed();
+        
+        UpdateMesh();
+    }
+
+    private void InitedMeshed()
+    {
+        _colorGenerate = new ColorGenerate(ColorSettting);
+        _shapeGenerate = new ShapeGenerate(ShapeSettting);
+        if (_material == null)
+        {
+            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        }
+        
         if (_meshFilterss == null)
         {
             _meshFilterss = new MeshFilter[6];
             for (int i = 0; i < 6; i++)
             {
                 var meshRenderer = (new GameObject(i+"")).AddComponent<MeshRenderer>();
+                meshRenderer.transform.SetParent(this.transform);
                 meshRenderer.transform.localPosition = Vector3.zero;
+                meshRenderer.transform.localScale = Vector3.one;
                 var meshFilter = meshRenderer.gameObject.AddComponent<MeshFilter>();
-                var meshCollider = meshFilter.gameObject.AddComponent<MeshCollider>();
-                
-                meshFilter.sharedMesh = new Mesh();
-                meshCollider.sharedMesh = meshFilter.sharedMesh; 
-                meshRenderer.sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 _meshFilterss[i] = meshFilter;
             }
         }
-        
-        faceGenerates = new FaceGenerate[6];
-        ShapeGenerate = new ShapeGenerate(ShapeSettting);
+
         for (int i = 0; i < 6; i++)
         {
-            faceGenerates[i] = new FaceGenerate(ShapeGenerate,_meshFilterss[i].mesh,faceNormal[i],resolution,radius);
-            faceGenerates[i].Update();
+            if (_meshFilterss[i].sharedMesh == null)
+            {
+                _meshFilterss[i].sharedMesh = new Mesh();
+                _meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = _meshFilterss[i].sharedMesh;
+                _meshFilterss[i].GetComponent<MeshRenderer>().sharedMaterial = _material;
+            }
+        }
+
+        if (faceGenerates == null)
+        {
+            faceGenerates = new FaceGenerate[6];
+            for (int i = 0; i < 6; i++)
+            {
+                faceGenerates[i] = new FaceGenerate(_shapeGenerate, _colorGenerate, _meshFilterss[i], faceNormal[i]);
+            }
         }
     }
 
-    [NonSerialized]
-    public bool shpaeSetttingsFoldOut;
-    public void OnShapeSetttingUpdated()
+
+    void UpdateMesh()
     {
         for (int i = 0; i < 6; i++)
         {
-            faceGenerates[i].Update();
+            faceGenerates[i].Update(resolution);
         }
+    }
+    
+    void UpdateShape()
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            faceGenerates[i].UpdateShape();
+        }
+    }
+    
+    void UpdateColor()
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            faceGenerates[i].UpdateColor();
+        }
+    }
+
+    
+
+    public void OnShapeSetttingUpdated()
+    {
+        UpdateShape();
+    }
+
+    public void OnColorSetttingUpdated()
+    {
+        UpdateColor();
     }
 
     private void OnValidate()

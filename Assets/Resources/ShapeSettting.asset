@@ -12,7 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9764a3cad214d5388c7b689570fb251, type: 3}
   m_Name: ShapeSettting
   m_EditorClassIdentifier: 
+  radius: 1
+  computeShader: {fileID: 7200000, guid: 0e6095f6769a24cdebb0db69a1e882db, type: 3}
   _noiseSetting:
-    strength: 3.34
-    offset: 0
+    layer: 4
+    layerRoughness: 4.23
+    layerMultiple: 0.31
+    strength: 1
+    roughness: 0.46
+    offset: {x: 0, y: 0, z: 0}
     noiseType: 0

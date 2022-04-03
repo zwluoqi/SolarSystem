@@ -1,42 +1,79 @@
 using System;
+using Planet.Setting;
 using UnityEngine;
 
 namespace Planet
 {
     public class FaceGenerate
     {
-        public ShapeGenerate ShapeGenerate;
-        public float Radius;
-        public Mesh Mesh;
+        public MeshFilter MeshFilter;
         public Vector3 Normal;
         public int Resolution;
 
         private Vector3 axisA;
         private Vector3 axisB;
+        private ShapeGenerate shapeGenerate;
+        private ColorGenerate colorGenerate;
+
+        private ComputeBuffer _bufferVertices;
+        private ComputeBuffer _bufferTriangles;
         
-        public FaceGenerate(ShapeGenerate shapeGenerate,Mesh mesh, Vector3 normal, int resolution,float radius)
+        private Vector3[] vertices;
+        private int[] triangles;
+        private readonly int ResolutionID = Shader.PropertyToID("Resolution");
+        private readonly int NormalID = Shader.PropertyToID("Normal");
+        private readonly int axisAID = Shader.PropertyToID("axisA");
+        private readonly int axisBID = Shader.PropertyToID("axisB");
+        private readonly int verticesID = Shader.PropertyToID("vertices");
+        
+        public FaceGenerate(ShapeGenerate shapeGenerate,
+            ColorGenerate colorGenerate,
+            MeshFilter meshFilter,Vector3 normal)
         {
-            ShapeGenerate = shapeGenerate;
-            Radius = radius;
-            Mesh = mesh;
+            this.shapeGenerate = shapeGenerate;
+            this.colorGenerate = colorGenerate;
+            MeshFilter = meshFilter;
             Normal = normal;
-            Resolution = resolution;
             //unity 左手坐标系
             axisA = new Vector3(normal.y,normal.z,normal.x);
             axisB = Vector3.Cross(normal, axisA);
-            
         }
 
-        private Vector3[] vertices;
-        private Vector3[] normals;
-        private int[] triangles;
-        public void Update()
+        public void Update(int resolution)
         {
-            vertices = new Vector3[(Resolution ) * (Resolution )];
-            // var m = (Resolution - 2);
-            var multiple = (Resolution - 1) * (Resolution - 1);
-            triangles = new int[multiple*2*3];
-            normals =  new Vector3[(Resolution ) * (Resolution )];
+            var _computeShader = shapeGenerate.ShapeSettting.computeShader;
+
+            if (Resolution != resolution)
+            {
+                Resolution = resolution;
+                vertices = new Vector3[(Resolution ) * (Resolution )];
+                var multiple = (Resolution - 1) * (Resolution - 1);
+                triangles = new int[multiple*2*3];
+                _bufferVertices = new ComputeBuffer(vertices.Length,3*4);
+                _bufferTriangles = new ComputeBuffer(multiple*2*3,4);
+                _bufferVertices.SetData(vertices);
+
+            }
+
+            UpdateShape();
+            UpdateColor();
+        }
+
+        public void UpdateShape()
+        {
+            var _computeShader = shapeGenerate.ShapeSettting.computeShader;
+            // _bufferTriangles.SetData(triangles);
+            _computeShader.SetInt(ResolutionID, Resolution);
+            _computeShader.SetVector(NormalID, Normal);
+            _computeShader.SetVector(axisAID, axisA);
+            _computeShader.SetVector(axisBID, axisB);
+            //获取内核函数的索引
+            var kernelVertices = _computeShader.FindKernel("CSMainVertices");
+            _computeShader.SetBuffer(kernelVertices,verticesID,_bufferVertices);
+            // var kernelTriangle = _computeShader.FindKernel("CSMainTriangle");
+            _computeShader.Dispatch(kernelVertices, Resolution / 8, Resolution / 8, 1);
+            // _computeShader.Dispatch(kernelTriangle, Resolution*Resolution / 8, 1 , 1);
+
             int indicIndex = 0;
             for (int y = 0; y < Resolution; y++)
             {
@@ -45,29 +82,10 @@ namespace Planet
                     var index = x + y * (Resolution);
                     Vector2 percent = new Vector2(x, y) / (Resolution - 1);
                     var pos = Normal+2*axisB * (percent.x - 0.5f) + 2*axisA * (percent.y - 0.5f);
-                    vertices[index] = Radius * pos.normalized * ShapeGenerate.Execulate(pos.normalized);
-                    normals[index] = pos.normalized;
+                    vertices[index] = shapeGenerate.Execulate(pos.normalized);
                     
                     if (x < Resolution - 1 && y < Resolution - 1)
                     {
-                        
-                        // triangles[indicIndex++] = index+Resolution;
-                        // triangles[indicIndex++] = index + (Resolution)+1;
-                        // triangles[indicIndex++] = index+1;
-                        //
-                        // triangles[indicIndex++] = index+1;
-                        // triangles[indicIndex++] = index;
-                        // triangles[indicIndex++] = index+Resolution;
-                        
-                        //顺时针
-                        // triangles[indicIndex++] = index;
-                        // triangles[indicIndex++] = index + 1;
-                        // triangles[indicIndex++] = index+1+Resolution;
-                        //
-                        // triangles[indicIndex++] = index+1+Resolution;
-                        // triangles[indicIndex++] = index+Resolution;
-                        // triangles[indicIndex++] = index;
-
                         //逆时针
                         triangles[indicIndex++] = index;
                         triangles[indicIndex++] = index+Resolution;
@@ -76,17 +94,22 @@ namespace Planet
                         triangles[indicIndex++] = index+1+Resolution;
                         triangles[indicIndex++] = index+1;
                         triangles[indicIndex++] = index;
-
                     }
                 }
             }
 
-            Mesh.Clear();
-            Mesh.vertices = vertices;
-            Mesh.triangles = triangles;
-            Mesh.RecalculateNormals();
-            // Mesh.normals = normals;
-            Mesh.UploadMeshData(false);
+            var mesh = MeshFilter.sharedMesh;
+            mesh.Clear();
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
+            mesh.UploadMeshData(false);
+        }
+
+        public void UpdateColor()
+        {
+            var sharedMaterial = MeshFilter.GetComponent<MeshRenderer>().sharedMaterial;
+            sharedMaterial.SetColor("_BaseColor",colorGenerate.Execute());
         }
     }
 }
