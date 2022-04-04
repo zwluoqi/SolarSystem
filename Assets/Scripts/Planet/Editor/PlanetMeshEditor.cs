@@ -33,6 +33,10 @@ namespace Planet
                 ref _planetMesh.shapeSetttingsFoldOut, ref shapeEditor);
             DrawSettingEditor(_planetMesh.ColorSettting, _planetMesh.OnColorSetttingUpdated,
                 ref _planetMesh.colorSetttingsFoldOut, ref colorEditor);
+            if (GUILayout.Button("Mesh存储"))
+            {
+                _planetMesh.SaveMesh(1);
+            }
         }
 
         private void DrawSettingEditor(ScriptableObject planetMeshShapeSettting, Action onShapeSetttingUpdated, ref bool planetMeshShpaeSetttingsFoldOut, ref Editor editor)

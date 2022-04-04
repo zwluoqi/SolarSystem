@@ -1,5 +1,6 @@
 using System;
 using Planet.Setting;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Planet
@@ -12,104 +13,129 @@ namespace Planet
 
         private Vector3 axisA;
         private Vector3 axisB;
-        private ShapeGenerate shapeGenerate;
-        private ColorGenerate colorGenerate;
 
-        private ComputeBuffer _bufferVertices;
-        private ComputeBuffer _bufferTriangles;
-        
         private Vector3[] vertices;
+        private Vector2[] uvs;
+        private Vector2[] formatuvs;
         private int[] triangles;
-        private readonly int ResolutionID = Shader.PropertyToID("Resolution");
-        private readonly int NormalID = Shader.PropertyToID("Normal");
-        private readonly int axisAID = Shader.PropertyToID("axisA");
-        private readonly int axisBID = Shader.PropertyToID("axisB");
-        private readonly int verticesID = Shader.PropertyToID("vertices");
-        
-        public FaceGenerate(ShapeGenerate shapeGenerate,
-            ColorGenerate colorGenerate,
+        public MinMax objectHeight = new MinMax();
+        public MinMax depth = new MinMax();
+        public void Init(
             MeshFilter meshFilter,Vector3 normal)
         {
-            this.shapeGenerate = shapeGenerate;
-            this.colorGenerate = colorGenerate;
             MeshFilter = meshFilter;
-            Normal = normal;
+            Normal = normal.normalized;
             //unity 左手坐标系
             axisA = new Vector3(normal.y,normal.z,normal.x);
+            axisA = axisA.normalized;
             axisB = Vector3.Cross(normal, axisA);
+            axisB = axisB.normalized;
         }
 
-        public void Update(int resolution)
+        public void Update(int resolution,VertexGenerate vertexGenerate,GPUShapeGenerate gpuShapeGenerate)
         {
-            var _computeShader = shapeGenerate.ShapeSettting.computeShader;
+            // var _computeShader = shapeGenerate.ShapeSettting.computeShader;
 
             if (Resolution != resolution)
             {
                 Resolution = resolution;
                 vertices = new Vector3[(Resolution ) * (Resolution )];
+                uvs = new Vector2[(Resolution ) * (Resolution )];
+                formatuvs = new Vector2[(Resolution ) * (Resolution )];
                 var multiple = (Resolution - 1) * (Resolution - 1);
                 triangles = new int[multiple*2*3];
-                _bufferVertices = new ComputeBuffer(vertices.Length,3*4);
-                _bufferTriangles = new ComputeBuffer(multiple*2*3,4);
-                _bufferVertices.SetData(vertices);
-
             }
 
-            UpdateShape();
-            UpdateColor();
+            UpdateShape(vertexGenerate,gpuShapeGenerate);
         }
 
-        public void UpdateShape()
+        public void UpdateShape(VertexGenerate vertexGenerate,GPUShapeGenerate gpuShapeGenerate)
         {
-            var _computeShader = shapeGenerate.ShapeSettting.computeShader;
-            // _bufferTriangles.SetData(triangles);
-            _computeShader.SetInt(ResolutionID, Resolution);
-            _computeShader.SetVector(NormalID, Normal);
-            _computeShader.SetVector(axisAID, axisA);
-            _computeShader.SetVector(axisBID, axisB);
-            //获取内核函数的索引
-            var kernelVertices = _computeShader.FindKernel("CSMainVertices");
-            _computeShader.SetBuffer(kernelVertices,verticesID,_bufferVertices);
-            // var kernelTriangle = _computeShader.FindKernel("CSMainTriangle");
-            _computeShader.Dispatch(kernelVertices, Resolution / 8, Resolution / 8, 1);
-            // _computeShader.Dispatch(kernelTriangle, Resolution*Resolution / 8, 1 , 1);
-
-            int indicIndex = 0;
-            for (int y = 0; y < Resolution; y++)
+            
+            var start = System.DateTime.Now;
+            if (gpuShapeGenerate != null)
             {
-                for (int x = 0; x < Resolution; x++)
+                gpuShapeGenerate.UpdateShape(vertexGenerate,vertices,triangles,uvs,
+                    Resolution,
+                    Normal,axisA,axisB);
+
+                for (int i = 0; i < uvs.Length; i++)
                 {
-                    var index = x + y * (Resolution);
-                    Vector2 percent = new Vector2(x, y) / (Resolution - 1);
-                    var pos = Normal+2*axisB * (percent.x - 0.5f) + 2*axisA * (percent.y - 0.5f);
-                    vertices[index] = shapeGenerate.Execulate(pos.normalized);
-                    
-                    if (x < Resolution - 1 && y < Resolution - 1)
+                    objectHeight.AddValue(uvs[i].x);
+                    depth.AddValue(uvs[i].y);
+                    formatuvs[i].y = uvs[i].y;
+                }
+            }    
+            else
+            {
+
+                int indicIndex = 0;
+                for (int y = 0; y < Resolution; y++)
+                {
+                    for (int x = 0; x < Resolution; x++)
                     {
-                        //逆时针
-                        triangles[indicIndex++] = index;
-                        triangles[indicIndex++] = index+Resolution;
-                        triangles[indicIndex++] = index+1+Resolution;
-                        
-                        triangles[indicIndex++] = index+1+Resolution;
-                        triangles[indicIndex++] = index+1;
-                        triangles[indicIndex++] = index;
+                        var index = x + y * (Resolution);
+                        Vector2 percent = new Vector2(x, y) / (Resolution - 1);
+                        var pos = Normal + 2 * axisB * (percent.x - 0.5f) + 2 * axisA * (percent.y - 0.5f);
+                        vertices[index] = vertexGenerate.Execulate(pos.normalized);
+                        // vertices[index] = (2 * axisB * (percent.x - 0.5f) + 2 * axisA * (percent.y - 0.5f))*shapeGenerate.shapeSettting.radius;
+                        if (x < Resolution - 1 && y < Resolution - 1)
+                        {
+                            
+                            //逆时针
+                            // triangles[indicIndex++] = index;
+                            // triangles[indicIndex++] = index + 1 + Resolution;
+                            // triangles[indicIndex++] = index + 1;
+                            //
+                            // triangles[indicIndex++] = index + 1 + Resolution;
+                            // triangles[indicIndex++] = index ;
+                            // triangles[indicIndex++] = index + Resolution;
+                            
+                            //
+                            // //逆时针
+                            triangles[indicIndex++] = index;
+                            triangles[indicIndex++] = index + Resolution;
+                            triangles[indicIndex++] = index + 1 + Resolution;
+                            
+                            triangles[indicIndex++] = index + 1 + Resolution;
+                            triangles[indicIndex++] = index + 1;
+                            triangles[indicIndex++] = index;
+                        }
                     }
                 }
-            }
 
+            }
+            var end = System.DateTime.Now;
+            // Debug.LogWarning($"cost time {(end-start).TotalMilliseconds}ms");
+            
             var mesh = MeshFilter.sharedMesh;
             mesh.Clear();
             mesh.vertices = vertices;
             mesh.triangles = triangles;
+            mesh.uv = formatuvs;
             mesh.RecalculateNormals();
-            mesh.UploadMeshData(false);
+            mesh.RecalculateBounds();
         }
 
-        public void UpdateColor()
+        public void FormatHeight(GPUShapeGenerate gpuShapeGenerate,ColorGenerate colorGenerate)
         {
-            var sharedMaterial = MeshFilter.GetComponent<MeshRenderer>().sharedMaterial;
-            sharedMaterial.SetColor("_BaseColor",colorGenerate.Execute());
+            //gpuShapeGenerate.UpdateShape(uvs,colorGenerate);
+            if (gpuShapeGenerate != null)
+            {
+                gpuShapeGenerate.UpdateColorFormatHeight(Resolution,colorGenerate.ColorSettting,formatuvs,vertices,uvs);
+                
+            }
+            else
+            {
+                for (int i = 0; i < uvs.Length; i++)
+                {
+                    formatuvs[i].x = colorGenerate.FormatHeight(vertices[i], uvs[i].x);
+                }
+            }
+
+            var mesh = MeshFilter.sharedMesh;
+            mesh.uv = formatuvs;
+            
         }
     }
 }
