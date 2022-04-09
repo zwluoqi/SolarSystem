@@ -15,6 +15,7 @@ int Resolution;
 float3 Normal;
 float3 axisB;
 float3 axisA;
+float ocean;
 
 StructuredBuffer<ShapeSettting> shapeSetting;
 StructuredBuffer<NoiseLayer> noiseLayerSettings;
@@ -32,9 +33,9 @@ void CSMainVertices (uint3 id : SV_DispatchThreadID)
     float2 percent = float2(id.x, id.y) / (Resolution - 1);
     float3 pos = Normal+2*axisB * (percent.x - 0.5f) + 2*axisA * (percent.y - 0.5f);
     pos = normalize(pos);
-    float2 noise = 0;
-    vertices[index] = ShapeGenerateExeculate(shapeSetting[0],pos ,noiseLayerSettings,noiseAddLayerCount,noise);
-    uvs[index] = float2(pos.y,noise.y);    
+    float2 outNoise = 0;
+    vertices[index] = ShapeGenerateExeculate(shapeSetting[0],pos ,noiseLayerSettings,noiseAddLayerCount,ocean,outNoise);
+    uvs[index] = float2(pos.y,outNoise.y);    
     //vertices[index] = ShapeGenerateExeculate(shapeSetting[0], normalize(pos));
     
     if(id.x<uint( Resolution-1) && id.y<uint(Resolution-1)){

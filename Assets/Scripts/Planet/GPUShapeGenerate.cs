@@ -1,4 +1,5 @@
-﻿using Planet.Setting;
+﻿using System;
+using Planet.Setting;
 using UnityEngine;
 
 namespace Planet
@@ -21,6 +22,8 @@ namespace Planet
         private readonly int shapeSettingId = Shader.PropertyToID("shapeSetting");
         private readonly int noiseLayerSettingsId = Shader.PropertyToID("noiseLayerSettings");
         private readonly int noiseAddLayerCountID = Shader.PropertyToID("noiseAddLayerCount");
+        private readonly int oceanID = Shader.PropertyToID("ocean");
+
         
         
         
@@ -39,8 +42,12 @@ namespace Planet
         }
 
         public void UpdateShape(VertexGenerate vertexGenerate,Vector3[] vertices,int[] triangles,Vector2[] uvs,
-            int resolution,Vector3 Normal,Vector3 axisA,Vector3 axisB)
+            int resolution,Vector3 Normal,Vector3 axisA,Vector3 axisB,PlanetSettingData planetSettingData)
         {
+            if (resolution < 8)
+            {
+                throw new Exception("分辨率低于8不允许使用GPU");
+            }
             CreateShapeBuffer(vertexGenerate,vertices,triangles,uvs);
             
             _bufferVertices.SetData(vertices);
@@ -56,6 +63,7 @@ namespace Planet
             computeShader.SetVector(axisAID, axisA);
             computeShader.SetVector(axisBID, axisB);
             computeShader.SetInt(noiseAddLayerCountID, _noiseLayerComputeBuffer?.count ?? 0);
+            computeShader.SetFloat(oceanID,planetSettingData.ocean?1.0f:0.0f);
             //获取内核函数的索引
             var kernelVertices = computeShader.FindKernel("CSMainVertices");
             computeShader.SetBuffer(kernelVertices,verticesID,_bufferVertices);
@@ -127,27 +135,28 @@ namespace Planet
         }
 
 
-
-        public void Dispose()
-        {
-            _bufferTriangles?.Release();
-
-            _bufferVertices?.Release();
-            
-            _bufferUVs?.Release();
-            
-            _baseShapeComputeBuffer?.Release();
-            _noiseLayerComputeBuffer?.Release();
-            
-            gpuColorGenerate.Dispose();
-        }
+        
 
 
         public void UpdateColorFormatHeight(int resolution, ColorSettting colorGenerateColorSettting, Vector2[] formatuvs,Vector3[] vertices,Vector2[] uvs)
         {
+            if (resolution < 8)
+            {
+                throw new Exception("分辨率低于8不允许使用GPU");
+            }
             _bufferVertices.SetData(vertices);
             _bufferUVs.SetData(uvs);
             gpuColorGenerate.UpdateColorFormatHeight(resolution,colorGenerateColorSettting,_bufferVertices,_bufferUVs,formatuvs);
+        }
+
+        public void Dispose()
+        {
+            _bufferVertices?.Dispose();
+            _bufferUVs?.Dispose();
+            _bufferTriangles?.Dispose();
+            _baseShapeComputeBuffer?.Dispose();
+            _noiseLayerComputeBuffer?.Dispose();
+            gpuColorGenerate?.Dispose();
         }
     }
 }

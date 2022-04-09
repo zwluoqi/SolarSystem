@@ -9,10 +9,13 @@ struct LatitudeSettingBuffer{
 };
 
 struct ColorSettting{
-    NoiseLayer noiseLayer;       
+    NoiseLayer noiseLayer;    
+    float blendRange;   
 };
 
-
+float invLerp(float from, float to, float value){
+  return clamp((value - from) / (to - from),0,1);
+}
 
 float ColorGenerateExeculate(ColorSettting colorSetting,
 StructuredBuffer<NoiseLayer> noiseLayerSettings,int layerCount,
@@ -20,24 +23,22 @@ StructuredBuffer<LatitudeSettingBuffer> latitudes,int latitudeCount,
 float3 vertex,float height){
 
     height = (height + 1) * 0.5f;
-    int latitudeIndex = 0;
+    float latitudeIndex = 0;
+    float blendRange = colorSetting.blendRange + 0.001f;
+    float2 noise = NoiseLayerExcute(vertex,colorSetting.noiseLayer,noiseLayerSettings,layerCount);
+    float noiseHeight = noise.y + height;
     for (int i = 0; i < latitudeCount; i++)
     {
-        float2 noise = NoiseLayerExcute(vertex,colorSetting.noiseLayer,noiseLayerSettings,layerCount);
-
-        float noiseHeight = noise.y + latitudes[i].startHeight;
-        if (height < noiseHeight)
-        {
-            break;
-        }
-        else
-        {
-            latitudeIndex = i;
-        }
+        float dist = noiseHeight - latitudes[i].startHeight;              
+        float weight = invLerp(-blendRange,blendRange,dist);
+        latitudeIndex *= (1- weight);
+        latitudeIndex += i*weight;
+        //if(height>latitudes[i].startHeight){
+        //    latitudeIndex = i;
+        //}
     }
 
-    float offset = .5f / latitudeCount;
-    return (latitudeIndex*1.0f) / (latitudeCount) + offset;            
+    return (latitudeIndex*1.0f) / max(1,(latitudeCount-1));            
 }
 
 

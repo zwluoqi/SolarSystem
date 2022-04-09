@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9764a3cad214d5388c7b689570fb251, type: 3}
   m_Name: planet_multie_fiter_noise_layer
   m_EditorClassIdentifier: 
-  GPU: 1
   computeShader: {fileID: 7200000, guid: 0e6095f6769a24cdebb0db69a1e882db, type: 3}
   radius: 256
   _noiseEnable: 1
@@ -43,8 +42,8 @@ MonoBehaviour:
       layer: 2
       layerRoughness: 4.25
       layerMultiple: 0.5
-      strength: 1.34
-      roughness: 2.09
+      strength: 0.09
+      roughness: 1.85
       offset: {x: 0, y: 0, z: 0}
-      minValue: 0.09
+      minValue: 0.69
       noiseType: 1

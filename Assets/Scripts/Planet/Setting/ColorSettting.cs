@@ -12,18 +12,22 @@ namespace Planet.Setting
         public int resolution = 128;
         public Color tinyColor;
         public Material material;
-        public Gradient gradient;
+        public Material oceanMaterial;
+        public Gradient oceanMainLand;
         public Gradient ocean;
         public LatitudeSetting[] LatitudeSettings = new LatitudeSetting[1];
 
         public bool noiseEnable;
         public NoiseSetting noiseSetting;
         public NoiseLayer[] noiseLayers;
+        [Range(0,0.1f)]
+        public float blendRange = 0.03f;
 
         public ColorSettingBuffer[] GetBaseBuffer()
         {
             ColorSettingBuffer[] colorSettingBuffer = new ColorSettingBuffer[1];
             colorSettingBuffer[0].noiseLayer = new NoiseLayerBuffer(this.noiseEnable?1.0f:0.0f,noiseSetting.ToBuffer());
+            colorSettingBuffer[0].blendRange = blendRange;
             return colorSettingBuffer;
         }
         
@@ -71,6 +75,7 @@ namespace Planet.Setting
     public struct ColorSettingBuffer
     {
         public NoiseLayerBuffer noiseLayer;
+        public float blendRange;
     }
 
     public struct LatitudeSettingBuffer

@@ -6,18 +6,28 @@ using Planet.Setting;
 using UnityEditor;
 using UnityEngine;
 
+public struct PlanetSettingData
+{
+    public bool gpu;
+    public bool ocean;
+}
+
 public class PlanetMesh : MonoBehaviour
 {
+
     public bool GPU = false;
+    public bool hasOcean = false;
     [Range(2,256)]
     public int resolution = 4;
-
+    [Range(2,256)]
+    public int oceanResolution = 4;
+    
     public ShapeSettting ShapeSettting;
     public ColorSettting ColorSettting;
     
     public MeshFilter[] _meshFilterss;
+    public MeshFilter[] _oceanMeshFilterss;
 
-    // private Material _material;
     
     [NonSerialized]
     public bool shapeSetttingsFoldOut;
@@ -29,7 +39,16 @@ public class PlanetMesh : MonoBehaviour
     private VertexGenerate _vertexGenerate = new VertexGenerate();
 
     private TerrainGenerate _terrainGenerate;
-    private GPUShapeGenerate _gpuShapeGenerate;
+    private TerrainGenerate _oceanTerrainGenerate;
+
+
+    private void OnDestroy()
+    {
+        _terrainGenerate.Dispose();
+        _oceanTerrainGenerate.Dispose();
+        _terrainGenerate = null;
+        _oceanTerrainGenerate = null;
+    }
 
     public void Generate()
     {
@@ -40,99 +59,123 @@ public class PlanetMesh : MonoBehaviour
 
     private void InitedMeshed()
     {
-        if (_gpuShapeGenerate != null)
-        {
-            _gpuShapeGenerate.Dispose();
-        }
-        _gpuShapeGenerate = new GPUShapeGenerate();
 
-        _terrainGenerate = new TerrainGenerate();
-        
-        if (_meshFilterss == null || _meshFilterss.Length == 0)
+        if (_terrainGenerate == null)
         {
-            _meshFilterss = new MeshFilter[6];
-            for (int i = 0; i < 6; i++)
+            _terrainGenerate = new TerrainGenerate();
+        }
+        
+        if (_oceanTerrainGenerate == null)
+        {
+            _oceanTerrainGenerate = new TerrainGenerate();
+        }
+
+        CreateMeshed(ref _meshFilterss,true);
+        CreateMeshed(ref _oceanMeshFilterss,false);
+       
+        _terrainGenerate.Init(_meshFilterss);
+        _oceanTerrainGenerate.Init(_oceanMeshFilterss);
+    }
+
+    private void CreateMeshed(ref MeshFilter[] meshFilterss,bool collide)
+    {
+        if (meshFilterss == null || meshFilterss.Length == 0)
+        {
+            meshFilterss = new MeshFilter[6];
+        }
+        
+        for (int i = 0; i < 6; i++)
+        {
+            if (meshFilterss[i] == null)
             {
-                var meshRenderer = (new GameObject(i+"")).AddComponent<MeshRenderer>();
+                var meshRenderer = (new GameObject(i + "")).AddComponent<MeshRenderer>();
                 meshRenderer.transform.SetParent(this.transform);
                 meshRenderer.transform.localPosition = Vector3.zero;
                 meshRenderer.transform.localScale = Vector3.one;
                 var meshFilter = meshRenderer.gameObject.AddComponent<MeshFilter>();
-                meshRenderer.gameObject.AddComponent<MeshCollider>();
-                _meshFilterss[i] = meshFilter;
+                if (collide)
+                {
+                    meshRenderer.gameObject.AddComponent<MeshCollider>();
+                }
+
+                meshFilterss[i] = meshFilter;
             }
         }
 
         for (int i = 0; i < 6; i++)
         {
-            if (_meshFilterss[i].sharedMesh == null)
+            if (meshFilterss[i].sharedMesh == null)
             {
-                _meshFilterss[i].sharedMesh = new Mesh();
-                _meshFilterss[i].sharedMesh.name = i + "";
-                _meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = _meshFilterss[i].sharedMesh;
+                meshFilterss[i].sharedMesh = new Mesh();
+                meshFilterss[i].sharedMesh.name = i + "";
+                if (collide)
+                {
+                    meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = meshFilterss[i].sharedMesh;
+                }
             }
         }
-
-        _terrainGenerate.Init(_meshFilterss);
     }
 
-#if UNITY_EDITOR
-    public void SaveMesh(int indx)
+
+    private PlanetSettingData GetPlanetSettingData()
     {
-        var mesh = new Mesh();
-        mesh.vertices = _meshFilterss[indx].sharedMesh.vertices;
-        mesh.triangles = _meshFilterss[indx].sharedMesh.triangles;
-        mesh.uv = _meshFilterss[indx].sharedMesh.uv;
-        mesh.normals = _meshFilterss[indx].sharedMesh.normals;
-        mesh.colors = _meshFilterss[indx].sharedMesh.colors;
-        mesh.UploadMeshData(false);
-        foreach (var vector3 in mesh.vertices)
-        {
-            Debug.LogWarning(vector3);
-        }
-        AssetDatabase.CreateAsset(mesh,"Assets/mesh"+resolution+".asset");
+        PlanetSettingData settingData = new PlanetSettingData();
+        settingData.gpu = GPU;
+        // settingData.ocean = ocean;
+        return settingData;
     }
-#endif
-
 
     void UpdateMesh()
     {
         _vertexGenerate .UpdateConfig(ShapeSettting);
         _colorGenerate .UpdateConfig(ColorSettting);
-        _terrainGenerate.UpdateMesh(resolution,_vertexGenerate,GPU?_gpuShapeGenerate:null,_colorGenerate);
+        PlanetSettingData settingData = GetPlanetSettingData();
+        settingData.ocean = false;
+        _terrainGenerate.UpdateMesh(resolution,_vertexGenerate,settingData,_colorGenerate);
+        settingData.ocean = true;
+        _oceanTerrainGenerate.UpdateMesh(oceanResolution,_vertexGenerate,settingData,_colorGenerate);
     }
-    
+
+
     void UpdateShape()
     {
         _vertexGenerate .UpdateConfig(ShapeSettting);
-        _terrainGenerate.UpdateShape(_vertexGenerate,GPU?_gpuShapeGenerate:null,_colorGenerate);
-
+        PlanetSettingData settingData = GetPlanetSettingData();
+        settingData.ocean = false;
+        _terrainGenerate.UpdateShape(_vertexGenerate,settingData,_colorGenerate);
+        settingData.ocean = true;
+        _oceanTerrainGenerate.UpdateShape(_vertexGenerate,settingData,_colorGenerate);
     }
     
     void UpdateColor()
     {
         _colorGenerate .UpdateConfig(ColorSettting);
-        _terrainGenerate.UpdateColor(_colorGenerate,GPU?_gpuShapeGenerate:null);
+        PlanetSettingData settingData = GetPlanetSettingData();
+        settingData.ocean = false;
+        _terrainGenerate.UpdateColor(_colorGenerate,settingData);
+        settingData.ocean = true;
+        _oceanTerrainGenerate.UpdateColor(_colorGenerate,settingData);
     }
 
-    
 
     public void OnShapeSetttingUpdated()
     {
-        Debug.LogWarning("OnShapeSetttingUpdated Start");
+        Debug.LogWarning(this.name+"OnShapeSetttingUpdated Start");
         UpdateShape();
-        Debug.LogWarning("OnShapeSetttingUpdated End");
+        Debug.LogWarning(this.name+"OnShapeSetttingUpdated End");
     }
 
     public void OnColorSetttingUpdated()
     {
-        Debug.LogWarning("OnColorSetttingUpdated Start");
+        Debug.LogWarning(this.name+"OnColorSetttingUpdated Start");
         UpdateColor();
-        Debug.LogWarning("OnColorSetttingUpdated End");
+        Debug.LogWarning(this.name+"OnColorSetttingUpdated End");
     }
 
     private void OnValidate()
     {
+        Debug.LogWarning(this.name+"OnValidate Start");
         Generate();
+        Debug.LogWarning(this.name+"OnValidate End");
     }
 }

@@ -28,6 +28,5 @@ void CSMainHeight(uint3 id : SV_DispatchThreadID)
     
     float formatUVHeight = ColorGenerateExeculate(colorSetting[0],noiseLayerSettings,noiseAddLayerCount,latitudes,latitudeCount,vertices[arrayIndex],uvs[arrayIndex].x);
     formatuvs[arrayIndex].x = formatUVHeight;
-    //formatuvs[arrayIndex].x = arrayIndex;
-    
+    //formatuvs[arrayIndex].x = arrayIndex;  
 }

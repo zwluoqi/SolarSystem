@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Planet
 {
-    public class GPUColorGenerate
+    public class GPUColorGenerate:System.IDisposable
     {
         private readonly int ResolutionID = Shader.PropertyToID("Resolution");
         private readonly int verticesID = Shader.PropertyToID("vertices");
@@ -110,12 +110,14 @@ namespace Planet
                 }
             }
         }
+        
 
         public void Dispose()
         {
-            _baseColorComputeBuffer?.Release();
-            _latitudeComputeBuffer?.Release();
-            _bufferFormatUVs?.Release();
+            _baseColorComputeBuffer?.Dispose();
+            _latitudeComputeBuffer?.Dispose();
+            _noiseLayerComputeBuffer?.Dispose();
+            _bufferFormatUVs?.Dispose();
         }
     }
 }

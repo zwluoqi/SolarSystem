@@ -115,13 +115,13 @@ Varyings CustomLitPassVertex(Attributes input)
     half fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
 
     float2 sourceUV = TRANSFORM_TEX(input.texcoord, _BaseMap);      
-    float ocean = invLerp(_minmax.x,0,sourceUV.y);
-    float top = invLerp(0,_minmax.y,sourceUV.y);
-    float x = 0.5*ocean+0.5*top;
-    output.uv.x = x;
+    //float ocean = invLerp(_minmax.x,0,sourceUV.y);
+    float depth = invLerp(0,_minmax.y,sourceUV.y);
+    //float x = 0.5*ocean+0.5*top;
+    output.uv.x = depth;
     output.uv.y = sourceUV.x;
     //smoothness
-    output.color.x = (1.0-floor(ocean));
+    //output.color.x = (1.0-floor(ocean));
     
     //output.uv.x = clamp((output.uv.x-_minmax.x)/(_minmax.y-_minmax.x),0,1);
     //output.uv.y = 0;

@@ -12,11 +12,11 @@ struct ShapeSettting{
 
 
 
-float3 ShapeGenerateExeculate(ShapeSettting shapeSettting, float3 normalPos,StructuredBuffer<NoiseLayer> noiseLayerSettings,int count,out float2 noiseValue){
+float3 ShapeGenerateExeculate(ShapeSettting shapeSettting, float3 normalPos,StructuredBuffer<NoiseLayer> noiseLayerSettings,int count,float ocean,out float2 noiseValue){
     
     noiseValue = NoiseLayerExcute(normalPos,shapeSettting.noiseLayer,noiseLayerSettings,count);
-    
-    return normalPos*(1+noiseValue.x)*shapeSettting.radius;
+    float mainland = 1-ocean;
+    return normalPos*(1+noiseValue.y*mainland)*shapeSettting.radius;
 }
 
 #endif
