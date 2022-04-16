@@ -26,16 +26,7 @@ namespace Planet
             triangles = new int[multiple*2*3];
         }
 
-        public void FillData(MeshFilter meshFilter)
-        {
-            vertices = meshFilter.sharedMesh.vertices;
-            normals = meshFilter.sharedMesh.normals;
-            tangents = meshFilter.sharedMesh.tangents;
-            
-            uvs = meshFilter.sharedMesh.uv;
-            formatuvs = meshFilter.sharedMesh.uv;
-            triangles = meshFilter.sharedMesh.triangles;
-        }
+        
     }
 
     public class FaceData
@@ -60,14 +51,11 @@ namespace Planet
         public MinMax objectHeight = new MinMax();
         public MinMax depth = new MinMax();
 
-        
-        public void Init(
-            MeshFilter meshFilter ,Vector3 normal,int resolution)
+
+        public FaceGenerate(Vector3 normal)
         {
-            MeshFilter = meshFilter;
             _faceData.Normal = normal.normalized;
-            
-            
+
             // normals[index] = normal;
             if (Math.Abs(Math.Abs(normal.y) - 1.0) < Mathf.Epsilon)
             {
@@ -90,8 +78,13 @@ namespace Planet
             //unity 左手坐标系
             _faceData.axisY = biTangent;
             _faceData.axisX = tangent;
-            
-            _meshData.FillData(MeshFilter);
+        }
+        
+        public void UpdateMeshFilter(
+            MeshFilter meshFilter ,int resolution)
+        {
+            MeshFilter = meshFilter;
+            _meshData.UpdateSize(resolution);
         }
 
         public void Update(int resolution,VertexGenerate vertexGenerate,PlanetSettingData planetSettingData,GPUShapeGenerate gpuShapeGenerate)

@@ -40,9 +40,7 @@ public class PlanetMesh : MonoBehaviour
     
     [NonSerialized]
     public bool showNormalAndTangent;
-    [NonSerialized]
-    public bool inited = false;
-    
+
 
     private ColorGenerate _colorGenerate = new ColorGenerate();
     private VertexGenerate _vertexGenerate = new VertexGenerate();
@@ -61,9 +59,13 @@ public class PlanetMesh : MonoBehaviour
 
     void UpdateBase()
     {
-        this.inited = true;
         InitedMeshed();
-        
+
+        Refresh();
+    }
+
+    void Refresh()
+    {
         _vertexGenerate .UpdateConfig(ShapeSettting);
         _colorGenerate .UpdateConfig(ColorSettting,WaterRenderSettting);
         PlanetSettingData settingData = GetPlanetSettingData();
@@ -75,26 +77,38 @@ public class PlanetMesh : MonoBehaviour
 
     private void InitedMeshed()
     {
-
-        if (_terrainGenerate == null)
+        bool refresh = false;
+        var resetTerrain = CreateMeshed(ref _meshFilterss,true);
+        if (resetTerrain || _terrainGenerate == null)
         {
-            _terrainGenerate = new TerrainGenerate();
+            if (_terrainGenerate == null)
+            {
+                _terrainGenerate = new TerrainGenerate();
+            }
+            _terrainGenerate.UpdateMeshFilter(_meshFilterss,resolution);
+            refresh = true;
         }
         
-        if (_oceanTerrainGenerate == null)
+        var resetOceanTerrain = CreateMeshed(ref _oceanMeshFilterss,false);
+        if (resetOceanTerrain || _oceanTerrainGenerate == null)
         {
-            _oceanTerrainGenerate = new TerrainGenerate();
+            if (_oceanTerrainGenerate == null)
+            {
+                _oceanTerrainGenerate = new TerrainGenerate();
+            }
+            _oceanTerrainGenerate.UpdateMeshFilter(_oceanMeshFilterss,oceanResolution);
+            refresh = true;
         }
 
-        CreateMeshed(ref _meshFilterss,true);
-        CreateMeshed(ref _oceanMeshFilterss,false);
-       
-        _terrainGenerate.Init(_meshFilterss,resolution);
-        _oceanTerrainGenerate.Init(_oceanMeshFilterss,oceanResolution);
+        if (refresh)
+        {
+            Refresh();
+        }
     }
 
-    private void CreateMeshed(ref MeshFilter[] meshFilterss,bool collide)
+    private bool CreateMeshed(ref MeshFilter[] meshFilterss,bool collide)
     {
+        bool reCreateSharedMesh = false;
         if (meshFilterss == null || meshFilterss.Length == 0)
         {
             meshFilterss = new MeshFilter[6];
@@ -105,7 +119,6 @@ public class PlanetMesh : MonoBehaviour
             if (meshFilterss[i] == null)
             {
                 var meshRenderer = (new GameObject(i + "")).AddComponent<MeshRenderer>();
-                meshRenderer.hideFlags = HideFlags.DontSave;
                 meshRenderer.transform.SetParent(this.transform);
                 meshRenderer.transform.localPosition = Vector3.zero;
                 meshRenderer.transform.localScale = Vector3.one;
@@ -116,10 +129,6 @@ public class PlanetMesh : MonoBehaviour
                 }
 
                 meshFilterss[i] = meshFilter;
-            }
-            else
-            {
-                meshFilterss[i].hideFlags = HideFlags.DontSave;
             }
         }
 
@@ -132,12 +141,16 @@ public class PlanetMesh : MonoBehaviour
                 {
                     meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = meshFilterss[i].sharedMesh;
                 }
+
+                reCreateSharedMesh = true;
             }
             else
             {
                 meshFilterss[i].sharedMesh.hideFlags = HideFlags.DontSave;
             }
         }
+
+        return reCreateSharedMesh;
     }
 
 

@@ -57,10 +57,6 @@ namespace Planet
                 ref _planetMesh.waterRenderSetttingsFoldOut, ref waterRenderEditor);
 
 
-            if (!_planetMesh.inited)
-            {
-                _planetMesh.OnBaseUpdate();
-            }
             _planetMesh.UpdateMaterialProperty();
             if (GUILayout.Button("Mesh存储"))
             {
