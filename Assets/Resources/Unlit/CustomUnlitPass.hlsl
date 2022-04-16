@@ -20,6 +20,8 @@ struct Varyings
     float4 fogFactorAndVertexLight  : TEXCOORD1;
     float3 normalWS  : TEXCOORD2;
     float3 viewDirWS  : TEXCOORD3;
+    float3 tangentWS  : TEXCOORD4;   
+    float3 normalOS  : TEXCOORD5;
     float4 vertex : SV_POSITION;
     float4 oceanData : COLOR;
 
@@ -31,33 +33,52 @@ float invLerp(float from, float to, float value){
     return clamp((value - from) / (to - from),0,1);
 }
 
+#define SPEEDTREE_PI 3.14159265359
 
-// float4 GetWaveColor(float2 tex0){
-//     //get and uncompress the flow vector for this pixel
-//     //float2 flowmap = SAMPLE_TEXTURE2D( FlowMapS,sampler_FlowMapS, tex0 ).rg * 2.0f - 1.0f;
-//     float s = 0;
-//     float2 flowmap = SAMPLE_TEXTURE2D( FlowMapS,sampler_FlowMapS, tex0 ).rg * 2.0f - 1.0f;               
-//     float cycleOffset = SAMPLE_TEXTURE2D( NoiseMapS,sampler_NoiseMapS ,tex0 ).r;
-//     
-//     float FlowMapOffset0 = (_Time.y*_speed);
-//     float FlowMapOffset1 = (_Time.y*_speed + .5f);
-//     
-//     float phase0 = frac(cycleOffset * .5f + FlowMapOffset0);
-//     float phase1 = frac(cycleOffset * .5f + FlowMapOffset1);
-//     
-//     
-//     float2 uv0 = ( tex0  ) + flowmap * phase0 ;
-//     float2 uv1 =  ( tex0  ) + flowmap * phase1 ;
-//     
-//     // Sample normal map.
-//     float4 normalT0 = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap, frac(uv0));
-//     float4 normalT1 = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap, frac(uv1) );
-//     
-//     float HalfCycle = cycleOffset*.5f;
-//     float flowLerp = ( abs( HalfCycle - phase0 ) / HalfCycle );
-//     float4 offset = lerp( normalT0, normalT1, flowLerp );
-//     return float4(normalT1.xyz,1);
-// }
+float2 GetDirection(float angle){
+    float ddx = cos(angle);
+    float ddy = sin(angle);
+    return float2(ddx,ddy);
+}
+
+float GetWavePosition(float3 tangentPos,float4 wave,out float3 normal,out float3 tangent){
+    float t = _Time.y;
+    
+    float W = SPEEDTREE_PI * 2.0 / wave.x / radius;
+    float A = wave.y;
+    float F = wave.z * W * radius;    
+    float angle = SPEEDTREE_PI * wave.w /180.0;
+    float2 Di = GetDirection(angle);
+    
+    float2 D = Di * tangentPos.xy;
+    float Dvalue = Di.x* tangentPos.x+Di.y*tangentPos.y;
+    
+    float H = radius*A*sin(Dvalue*W+F*t);
+    float dx = W*Di.x*A*cos(Dvalue*W+F*t);
+    float dy = W*Di.y*A*cos(Dvalue*W+F*t);
+    tangent = float3(1,0,dy);
+    normal = float3(-dx,-dy,1);
+    return H;
+}
+
+float MultipleWavePositoin(float3 tangentPos,out float3 normal,out float3 tangent){
+    float offset;
+    float3 tmpNormal;
+    float3 tmpTangent;
+    float tmpOffset;
+    for(int i=0;i<waveLen;i+=1){
+        tmpOffset = GetWavePosition(tangentPos,waves[0],tmpNormal,tmpTangent);
+        normal += tmpNormal;
+        tangent += tmpTangent;
+        offset += tmpOffset;
+    }
+    
+    //normal = float3(0,0,1);
+    //tangent = float3(1,0,0);
+    return offset;
+}
+
+
 
 Varyings vert(Attributes input)
 {
@@ -67,18 +88,35 @@ Varyings vert(Attributes input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-    VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
+
+    real sign = input.tangentOS.w * GetOddNegativeScale();
+    
+    
+    half crossSign = (sign > 0.0 ? 1.0 : -1.0); // we do not need to multiple GetOddNegativeScale() here, as it is done in vertex shader
+    half3 bitang = crossSign * cross(normalize(input.normalOS.xyz), normalize(input.tangentOS.xyz));
+    half4x4 vertexTangentToObj = half4x4(half4(input.tangentOS.x,bitang.x,input.normalOS.x,0),
+                                    half4(input.tangentOS.y,bitang.y,input.normalOS.y,0),
+                                    half4(input.tangentOS.z,bitang.z,input.normalOS.z,0),
+                                    half4(0,0,0,1)
+                                    );
+
+    half3 normalTS;
+    half3 tangentTS;
+    half offset = MultipleWavePositoin(input.positionOS,normalTS,tangentTS);
+    half3 normalOS = mul(vertexTangentToObj,float4(normalTS,0.0)).xyz;
+    half4 tangentOS = half4(mul(vertexTangentToObj,float4(tangentTS,.0)).xyz,input.tangentOS.w);   
+    half3 positionOS = input.positionOS.xyz +normalOS*offset;
+
+    VertexPositionInputs vertexInput = GetVertexPositionInputs(positionOS.xyz);
     output.vertex = vertexInput.positionCS;
 
     // normalWS and tangentWS already normalize.
     // this is required to avoid skewing the direction during interpolation
     // also required for per-vertex lighting and SH evaluation
-    VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+    VertexNormalInputs normalInput = GetVertexNormalInputs(normalOS, tangentOS);
 
     half3 viewDirWS = GetWorldSpaceViewDir(vertexInput.positionWS);
-    half3 vertexLight = VertexLighting(vertexInput.positionWS, normalInput.normalWS);
-    
-
+    half3 vertexLight = VertexLighting(vertexInput.positionWS, normalInput.normalWS);   
     
     float2 sourceUV = TRANSFORM_TEX(input.uv, _BaseMap);
     
@@ -97,6 +135,8 @@ Varyings vert(Attributes input)
     output.fogFactorAndVertexLight = float4(fogCoord,vertexLight);
     output.viewDirWS = viewDirWS;
     output.normalWS = normalInput.normalWS;
+    output.tangentWS = normalInput.tangentWS;
+    output.normalOS = normalOS;//input.normalOS;//normalTS;//mul(vertexObjToTangent,input.normalOS);
 
     
     return output;
@@ -106,7 +146,7 @@ half4 frag(Varyings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-
+    return float4(0.5*(1.0+input.normalOS.xyz),1);
     half2 uv = input.uv;
     half4 texColor = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap, uv);
     half3 color = texColor.rgb * _BaseColor.rgb;

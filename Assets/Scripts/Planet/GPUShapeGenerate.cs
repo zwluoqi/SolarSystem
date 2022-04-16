@@ -4,19 +4,87 @@ using UnityEngine;
 
 namespace Planet
 {
+
+    public class MeshDataComputerBuffer
+    {
+        public ComputeBuffer _bufferVertices;
+        public  ComputeBuffer _bufferNormals;
+        public  ComputeBuffer _bufferTangents;
+        
+        public  ComputeBuffer _bufferUVs;
+        public  ComputeBuffer _bufferTriangles;
+
+
+        public void SetData(MeshData meshData)
+        {
+            
+            _bufferVertices.SetData(meshData.vertices);
+            _bufferTriangles.SetData(meshData.triangles);
+        }
+
+        public void GetData(MeshData meshData)
+        {
+            
+            _bufferVertices.GetData(meshData.vertices);
+            _bufferNormals.GetData(meshData.normals);
+            _bufferTangents.GetData(meshData.tangents);
+            
+            _bufferUVs.GetData(meshData.uvs);
+            _bufferTriangles.GetData(meshData.triangles);
+        }
+
+        public void CreateShapeBuffer(MeshData meshData)
+        {
+
+            ResizeComputerBuffer(ref _bufferVertices, ref meshData.vertices,3*4);
+            ResizeComputerBuffer(ref _bufferNormals, ref meshData.normals,3*4);
+            ResizeComputerBuffer(ref _bufferTangents, ref meshData.tangents,4*4);
+            ResizeComputerBuffer(ref _bufferTriangles, ref meshData.triangles,4);
+            ResizeComputerBuffer(ref _bufferUVs, ref meshData.uvs,2*4);
+            
+        }
+
+        private void ResizeComputerBuffer<T>(ref ComputeBuffer bufferVertices, ref T[] meshDataVertices,int stride)
+        {
+                        
+            if (bufferVertices != null&&bufferVertices.count != meshDataVertices.Length)
+            {
+                bufferVertices.Release();
+                bufferVertices.Dispose();
+                bufferVertices = null;
+            }
+            if(bufferVertices == null)
+            {
+                bufferVertices = new ComputeBuffer(meshDataVertices.Length,stride);
+            }
+
+        }
+
+        public void Dispose()
+        {
+            _bufferVertices?.Dispose();
+            _bufferNormals?.Dispose();
+            _bufferTangents?.Dispose();
+            
+            _bufferUVs?.Dispose();
+            _bufferTriangles?.Dispose();
+        }
+    }
     public class GPUShapeGenerate:System.IDisposable
     {
-        
-        
-        private ComputeBuffer _bufferVertices;
-        private ComputeBuffer _bufferUVs;
-        private ComputeBuffer _bufferTriangles;
+
+
+        private MeshDataComputerBuffer _meshDataComputerBuffer = new MeshDataComputerBuffer();
         
         private readonly int ResolutionID = Shader.PropertyToID("Resolution");
         private readonly int NormalID = Shader.PropertyToID("Normal");
-        private readonly int axisAID = Shader.PropertyToID("axisA");
-        private readonly int axisBID = Shader.PropertyToID("axisB");
+        private readonly int BiNormalID = Shader.PropertyToID("BiNormal");
+        
+        private readonly int axisXID = Shader.PropertyToID("axisX");
+        private readonly int axisYID = Shader.PropertyToID("axisY");
         private readonly int verticesID = Shader.PropertyToID("vertices");
+        private readonly int normalsID = Shader.PropertyToID("normals");
+        private readonly int tangentsID = Shader.PropertyToID("tangents");
         private readonly int uvsID = Shader.PropertyToID("uvs");
         private readonly int trianglesID = Shader.PropertyToID("triangles");
         private readonly int shapeSettingId = Shader.PropertyToID("shapeSetting");
@@ -41,17 +109,16 @@ namespace Planet
             }
         }
 
-        public void UpdateShape(VertexGenerate vertexGenerate,Vector3[] vertices,int[] triangles,Vector2[] uvs,
-            int resolution,Vector3 Normal,Vector3 axisA,Vector3 axisB,PlanetSettingData planetSettingData)
+        public void UpdateShape(VertexGenerate vertexGenerate,MeshData _meshData,
+            int resolution,FaceData _faceData ,PlanetSettingData planetSettingData)
         {
             if (resolution < 8)
             {
                 throw new Exception("分辨率低于8不允许使用GPU");
             }
-            CreateShapeBuffer(vertexGenerate,vertices,triangles,uvs);
+            CreateShapeBuffer(vertexGenerate,_meshData);
             
-            _bufferVertices.SetData(vertices);
-            _bufferTriangles.SetData(triangles);
+            _meshDataComputerBuffer.SetData(_meshData);
             
             _baseShapeComputeBuffer.SetData(vertexGenerate.shapeSettting.ToBaseBuffer());
             _noiseLayerComputeBuffer.SetData(vertexGenerate.shapeSettting.ToLayerBuffer());
@@ -59,63 +126,33 @@ namespace Planet
             var computeShader = vertexGenerate.shapeSettting.computeShader;
 
             computeShader.SetInt(ResolutionID, resolution);
-            computeShader.SetVector(NormalID, Normal);
-            computeShader.SetVector(axisAID, axisA);
-            computeShader.SetVector(axisBID, axisB);
+            computeShader.SetVector(NormalID, _faceData.Normal);
+            computeShader.SetVector(BiNormalID, _faceData.BiNormal);
+            
+            computeShader.SetVector(axisXID, _faceData.axisX);
+            computeShader.SetVector(axisYID, _faceData.axisY);
             computeShader.SetInt(noiseAddLayerCountID, _noiseLayerComputeBuffer?.count ?? 0);
             computeShader.SetFloat(oceanID,planetSettingData.ocean?1.0f:0.0f);
             //获取内核函数的索引
             var kernelVertices = computeShader.FindKernel("CSMainVertices");
-            computeShader.SetBuffer(kernelVertices,verticesID,_bufferVertices);
-            computeShader.SetBuffer(kernelVertices,uvsID,_bufferUVs);
-            computeShader.SetBuffer(kernelVertices,trianglesID,_bufferTriangles);
+            computeShader.SetBuffer(kernelVertices,verticesID,_meshDataComputerBuffer._bufferVertices);
+            computeShader.SetBuffer(kernelVertices,normalsID,_meshDataComputerBuffer._bufferNormals);
+            computeShader.SetBuffer(kernelVertices,tangentsID,_meshDataComputerBuffer._bufferTangents);
+            computeShader.SetBuffer(kernelVertices,uvsID,_meshDataComputerBuffer._bufferUVs);
+            computeShader.SetBuffer(kernelVertices,trianglesID,_meshDataComputerBuffer._bufferTriangles);
+            
             computeShader.SetBuffer(kernelVertices,shapeSettingId,_baseShapeComputeBuffer);
             computeShader.SetBuffer(kernelVertices, noiseLayerSettingsId, _noiseLayerComputeBuffer);
             computeShader.Dispatch(kernelVertices, resolution, resolution, 1);
-            _bufferVertices.GetData(vertices);
-            _bufferUVs.GetData(uvs);
-                
-                
-            // var kernelTriangle = _computeShader.FindKernel("CSMainTriangle");
-            // _computeShader.SetBuffer(kernelTriangle,trianglesID,_bufferTriangles);
-            // _computeShader.Dispatch(kernelTriangle, 1, ((resolution - 1) * (resolution - 1)-1)/8+1 , 1);
-            _bufferTriangles.GetData(triangles);
+            
+            _meshDataComputerBuffer.GetData(_meshData);
+            
         }
 
-        private void CreateShapeBuffer(VertexGenerate vertexGenerate,Vector3[] vertices,int[] triangles,Vector2[] uvs)
+        private void CreateShapeBuffer(VertexGenerate vertexGenerate,MeshData meshData)
         {
-            if (_bufferVertices != null&&_bufferVertices.count != vertices.Length)
-            {
-                _bufferVertices.Release();
-                _bufferVertices.Dispose();
-                _bufferVertices = null;
-            }
-            if(_bufferVertices == null)
-            {
-                _bufferVertices = new ComputeBuffer(vertices.Length,3*4);
-            }
-
-            if (_bufferTriangles != null && _bufferTriangles.count != triangles.Length)
-            {
-                _bufferTriangles.Release();
-                _bufferTriangles.Dispose();
-                _bufferTriangles = null;
-            }
-            if (_bufferTriangles == null)
-            {
-                _bufferTriangles = new ComputeBuffer(triangles.Length, 4);
-            }
+            _meshDataComputerBuffer.CreateShapeBuffer(meshData);
             
-            if (_bufferUVs != null && _bufferUVs.count != uvs.Length)
-            {
-                _bufferUVs.Release();
-                _bufferUVs.Dispose();
-                _bufferUVs = null;
-            }
-            if (_bufferUVs == null)
-            {
-                _bufferUVs = new ComputeBuffer(uvs.Length, 2*4);
-            }
 
             if (_noiseLayerComputeBuffer != null &&
                 _noiseLayerComputeBuffer.count != vertexGenerate.shapeSettting._noiseLayers.Length)
@@ -138,22 +175,20 @@ namespace Planet
         
 
 
-        public void UpdateColorFormatHeight(int resolution, ColorSettting colorGenerateColorSettting, Vector2[] formatuvs,Vector3[] vertices,Vector2[] uvs)
+        public void UpdateColorFormatHeight(int resolution, ColorSettting colorGenerateColorSettting, MeshData meshData)
         {
             if (resolution < 8)
             {
                 throw new Exception("分辨率低于8不允许使用GPU");
             }
-            _bufferVertices.SetData(vertices);
-            _bufferUVs.SetData(uvs);
-            gpuColorGenerate.UpdateColorFormatHeight(resolution,colorGenerateColorSettting,_bufferVertices,_bufferUVs,formatuvs);
+            _meshDataComputerBuffer._bufferVertices.SetData(meshData.vertices);
+            _meshDataComputerBuffer._bufferUVs.SetData(meshData.uvs);
+            gpuColorGenerate.UpdateColorFormatHeight(resolution,colorGenerateColorSettting,_meshDataComputerBuffer._bufferVertices,_meshDataComputerBuffer._bufferUVs,meshData.formatuvs);
         }
 
         public void Dispose()
         {
-            _bufferVertices?.Dispose();
-            _bufferUVs?.Dispose();
-            _bufferTriangles?.Dispose();
+            _meshDataComputerBuffer.Dispose();
             _baseShapeComputeBuffer?.Dispose();
             _noiseLayerComputeBuffer?.Dispose();
             gpuColorGenerate?.Dispose();

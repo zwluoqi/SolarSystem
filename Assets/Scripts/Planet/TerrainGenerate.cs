@@ -6,9 +6,12 @@ namespace Planet
     {
         private GPUShapeGenerate gpuShapeGenerate;
         private Texture2D texture2D;
+        private Material sharedMaterial;
 
         private FaceGenerate[] faceGenerates;
-        readonly Vector3[] faceNormal = {Vector3.forward, Vector3.back, Vector3.right, Vector3.left, Vector3.up, Vector3.down};
+
+        private static Quaternion rotationY = Quaternion.AngleAxis(-90, Vector3.up); 
+        readonly Vector3[] faceNormal = {Vector3.up,Vector3.forward, Vector3.left, Vector3.back, Vector3.right,  Vector3.down};
 
 
         
@@ -50,19 +53,30 @@ namespace Planet
         
         public void UpdateColor(ColorGenerate colorGenerate, PlanetSettingData planetSettingData)
         {
-            Material sharedMaterial;
-            if (planetSettingData.ocean)
+            // Material sharedMaterial;
+            if (sharedMaterial == null)
             {
-                sharedMaterial = colorGenerate.ColorSettting.oceanMaterial;
+                if (planetSettingData.ocean)
+                {
+                    sharedMaterial = Object.Instantiate(colorGenerate.ColorSettting.oceanMaterial);
+                }
+                else
+                {
+                    sharedMaterial = Object.Instantiate(colorGenerate.ColorSettting.material);
+                }
             }
-            else
-            {
-                sharedMaterial = colorGenerate.ColorSettting.material;
-            }
+            colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
 
             sharedMaterial.color = colorGenerate.Execute();
-            colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
             sharedMaterial.mainTexture = texture2D;
+            sharedMaterial.SetFloat("radius",planetSettingData.radius);
+            if (colorGenerate.ColorSettting.waterRender.waterLayers.Length != 0)
+            {
+                sharedMaterial.SetVectorArray("waves",colorGenerate.ColorSettting.waterRender.ToWaveVec4s());    
+            }
+            sharedMaterial.SetInt("waveLen",colorGenerate.ColorSettting.waterRender.waterLayers.Length);
+            sharedMaterial.SetFloat("_alphaMultiplier",colorGenerate.ColorSettting.waterRender.alphaMultiplier);
+            sharedMaterial.SetFloat("_waterSmoothness",colorGenerate.ColorSettting.waterRender.waterSmoothness);
             for (int i = 0; i < 6; i++)
             {
                 faceGenerates[i].UpdateMaterial(sharedMaterial);
@@ -72,17 +86,23 @@ namespace Planet
             MinMax depth = new MinMax();
             for (int i = 0; i < 6; i++)
             {
-                // objectHeight.AddValue(faceGenerates[i].objectHeight);
                 depth.AddValue(faceGenerates[i].depth);
             }
             sharedMaterial.SetVector("_minmax",new Vector4(depth.min,depth.max,0,0));
         }
 
-
         public void Dispose()
         {
             gpuShapeGenerate?.Dispose();
             Object.Destroy(texture2D);
+        }
+
+        public void OnDrawGizmos(float radius)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                faceGenerates[i].OnDrawGizmos(radius);
+            }
         }
     }
 }

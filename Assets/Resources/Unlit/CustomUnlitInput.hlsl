@@ -12,15 +12,13 @@ CBUFFER_START(UnityPerMaterial)
     half _Cutoff;
     half _Surface;
     half2 _minmax;
-    half _alphaMultiplier;
-    half _waterSmoothness;
-    half _speed;
+    float _alphaMultiplier;
+    float _waterSmoothness;
+    float radius;
+    float waveLen;
+    float4 waves[12];
 CBUFFER_END
 
-TEXTURE2D(FlowMapS);        SAMPLER(sampler_FlowMapS);
-TEXTURE2D(NoiseMapS);       SAMPLER(sampler_NoiseMapS);
-TEXTURE2D(WaveMapS0);         SAMPLER(sampler_WaveMapS0);
-TEXTURE2D(WaveMapS1);         SAMPLER(sampler_WaveMapS1);
 
 
 #ifdef UNITY_DOTS_INSTANCING_ENABLED
@@ -31,7 +29,8 @@ UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
     UNITY_DOTS_INSTANCED_PROP(float2 , _minmax)
     UNITY_DOTS_INSTANCED_PROP(float , _alphaMultiplier)
     UNITY_DOTS_INSTANCED_PROP(float , _waterSmoothness)
-    UNITY_DOTS_INSTANCED_PROP(float , _speed)
+    UNITY_DOTS_INSTANCED_PROP(float , radius)  
+    UNITY_DOTS_INSTANCED_PROP(float , waveLen)  
 UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
 
 #define _BaseColor          UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float4 , Metadata__BaseColor)
@@ -40,7 +39,8 @@ UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
 #define _minmax            UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float2  , Metadata__minmax)
 #define _alphaMultiplier            UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float  , Metadata__alphaMultiplier)
 #define _waterSmoothness            UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float  , Metadata__waterSmoothness)
-#define _speed            UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float  , Metadata__speed)
+#define radius            UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float4x4  , Metadata_radius)
+#define waveLen            UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO(float  , Metadata_waveLen)
 #endif
 
 

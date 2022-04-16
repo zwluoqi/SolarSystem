@@ -6,6 +6,8 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWStructuredBuffer<float3> vertices;
+RWStructuredBuffer<float3> normals;
+RWStructuredBuffer<float4> tangents;
 
 RWStructuredBuffer<int> triangles;
 
@@ -13,8 +15,9 @@ RWStructuredBuffer<float2> uvs;
 
 int Resolution;
 float3 Normal;
-float3 axisB;
-float3 axisA;
+float3 BiNormal;
+float3 axisX;
+float3 axisY;
 float ocean;
 
 StructuredBuffer<ShapeSettting> shapeSetting;
@@ -31,10 +34,13 @@ void CSMainVertices (uint3 id : SV_DispatchThreadID)
     // vertices[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
     int index = id.x + id.y * (Resolution);
     float2 percent = float2(id.x, id.y) / (Resolution - 1);
-    float3 pos = Normal+2*axisB * (percent.x - 0.5f) + 2*axisA * (percent.y - 0.5f);
+    float3 pos = Normal+2*axisX * (percent.x - 0.5f) + 2*axisY * (percent.y - 0.5f);
     pos = normalize(pos);
     float2 outNoise = 0;
     vertices[index] = ShapeGenerateExeculate(shapeSetting[0],pos ,noiseLayerSettings,noiseAddLayerCount,ocean,outNoise);
+    float3 normal = normalize(vertices[index]);
+    normals[index] = normal; 
+    tangents[index] = float4(cross(normal,float3(0,1,0)),-1.0f);
     uvs[index] = float2(pos.y,outNoise.y);    
     //vertices[index] = ShapeGenerateExeculate(shapeSetting[0], normalize(pos));
     

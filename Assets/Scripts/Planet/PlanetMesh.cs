@@ -5,18 +5,19 @@ using Planet;
 using Planet.Setting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public struct PlanetSettingData
 {
     public bool gpu;
     public bool ocean;
+    public float radius;
 }
 
 public class PlanetMesh : MonoBehaviour
 {
 
-    public bool GPU = false;
-    public bool hasOcean = false;
+    public bool GPU = true;
     [Range(2,256)]
     public int resolution = 4;
     [Range(2,256)]
@@ -33,6 +34,8 @@ public class PlanetMesh : MonoBehaviour
     public bool shapeSetttingsFoldOut;
     [NonSerialized]
     public bool colorSetttingsFoldOut;
+    [NonSerialized]
+    public bool showNormalAndTangent;
     
 
     private ColorGenerate _colorGenerate = new ColorGenerate();
@@ -50,11 +53,17 @@ public class PlanetMesh : MonoBehaviour
         _oceanTerrainGenerate = null;
     }
 
-    public void Generate()
+    void UpdateBase()
     {
         InitedMeshed();
         
-        UpdateMesh();
+        _vertexGenerate .UpdateConfig(ShapeSettting);
+        _colorGenerate .UpdateConfig(ColorSettting);
+        PlanetSettingData settingData = GetPlanetSettingData();
+        settingData.ocean = false;
+        _terrainGenerate.UpdateMesh(resolution,_vertexGenerate,settingData,_colorGenerate);
+        settingData.ocean = true;
+        _oceanTerrainGenerate.UpdateMesh(oceanResolution,_vertexGenerate,settingData,_colorGenerate);
     }
 
     private void InitedMeshed()
@@ -89,6 +98,7 @@ public class PlanetMesh : MonoBehaviour
             if (meshFilterss[i] == null)
             {
                 var meshRenderer = (new GameObject(i + "")).AddComponent<MeshRenderer>();
+                meshRenderer.hideFlags = HideFlags.DontSave;
                 meshRenderer.transform.SetParent(this.transform);
                 meshRenderer.transform.localPosition = Vector3.zero;
                 meshRenderer.transform.localScale = Vector3.one;
@@ -100,18 +110,25 @@ public class PlanetMesh : MonoBehaviour
 
                 meshFilterss[i] = meshFilter;
             }
+            else
+            {
+                meshFilterss[i].hideFlags = HideFlags.DontSave;
+            }
         }
 
         for (int i = 0; i < 6; i++)
         {
             if (meshFilterss[i].sharedMesh == null)
             {
-                meshFilterss[i].sharedMesh = new Mesh();
-                meshFilterss[i].sharedMesh.name = i + "";
+                meshFilterss[i].sharedMesh = new Mesh {name = i + "", hideFlags = HideFlags.DontSave};
                 if (collide)
                 {
                     meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = meshFilterss[i].sharedMesh;
                 }
+            }
+            else
+            {
+                meshFilterss[i].sharedMesh.hideFlags = HideFlags.DontSave;
             }
         }
     }
@@ -121,24 +138,16 @@ public class PlanetMesh : MonoBehaviour
     {
         PlanetSettingData settingData = new PlanetSettingData();
         settingData.gpu = GPU;
+        settingData.radius = ShapeSettting.radius;
         // settingData.ocean = ocean;
         return settingData;
     }
-
-    void UpdateMesh()
-    {
-        _vertexGenerate .UpdateConfig(ShapeSettting);
-        _colorGenerate .UpdateConfig(ColorSettting);
-        PlanetSettingData settingData = GetPlanetSettingData();
-        settingData.ocean = false;
-        _terrainGenerate.UpdateMesh(resolution,_vertexGenerate,settingData,_colorGenerate);
-        settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateMesh(oceanResolution,_vertexGenerate,settingData,_colorGenerate);
-    }
+    
 
 
     void UpdateShape()
     {
+        InitedMeshed();
         _vertexGenerate .UpdateConfig(ShapeSettting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
@@ -149,6 +158,7 @@ public class PlanetMesh : MonoBehaviour
     
     void UpdateColor()
     {
+        InitedMeshed();
         _colorGenerate .UpdateConfig(ColorSettting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
@@ -172,10 +182,25 @@ public class PlanetMesh : MonoBehaviour
         Debug.LogWarning(this.name+"OnColorSetttingUpdated End");
     }
 
-    private void OnValidate()
+    public void OnBaseUpdate()
     {
-        Debug.LogWarning(this.name+"OnValidate Start");
-        Generate();
-        Debug.LogWarning(this.name+"OnValidate End");
+        Debug.LogWarning(this.name+"OnBaseUpdate Start");
+        UpdateBase();
+        Debug.LogWarning(this.name+"OnBaseUpdate End");
+    }
+
+    // private void OnValidate()
+    // {
+    //     Debug.LogWarning(this.name+"OnValidate Start");
+    //     UpdateBase();
+    //     Debug.LogWarning(this.name+"OnValidate End");
+    // }
+
+    private void OnDrawGizmos()
+    {
+        if (showNormalAndTangent)
+        {
+            _oceanTerrainGenerate.OnDrawGizmos(ShapeSettting.radius);
+        }
     }
 }

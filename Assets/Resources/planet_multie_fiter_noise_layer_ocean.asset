@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: planet_multie_fiter_noise_layer_ocean
   m_EditorClassIdentifier: 
   computeShader: {fileID: 7200000, guid: 0e6095f6769a24cdebb0db69a1e882db, type: 3}
-  radius: 256
+  radius: 1
   _noiseEnable: 1
   _noiseSetting:
     layer: 4

@@ -5,31 +5,88 @@ using UnityEngine;
 
 namespace Planet
 {
+    public class MeshData
+    {
+        public Vector3[] vertices;
+        public  Vector2[] uvs;
+        public  int[] triangles;
+        public  Vector3[] normals;
+        public  Vector4[] tangents;
+        public  Vector2[] formatuvs;
+
+        public void UpdateSize(int Resolution)
+        {
+            vertices = new Vector3[(Resolution ) * (Resolution )];
+            normals = new Vector3[(Resolution ) * (Resolution )];
+            tangents = new Vector4[(Resolution ) * (Resolution )];
+                
+            uvs = new Vector2[(Resolution ) * (Resolution )];
+            formatuvs = new Vector2[(Resolution ) * (Resolution )];
+            var multiple = (Resolution - 1) * (Resolution - 1);
+            triangles = new int[multiple*2*3];
+        }
+    }
+
+    public class FaceData
+    {
+        public Vector3 Normal;
+        public Vector3 BiNormal;
+
+        public Vector3 axisY;
+        public Vector3 axisX;
+    }
+    
     public class FaceGenerate
     {
+        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
         public MeshFilter MeshFilter;
-        public Vector3 Normal;
         public int Resolution;
 
-        private Vector3 axisA;
-        private Vector3 axisB;
+        private FaceData _faceData = new FaceData();
 
-        private Vector3[] vertices;
-        private Vector2[] uvs;
-        private Vector2[] formatuvs;
-        private int[] triangles;
+        private MeshData _meshData = new MeshData();
+        
         public MinMax objectHeight = new MinMax();
         public MinMax depth = new MinMax();
+
+        // public Matrix4x4 tangent2obj;
+        // public Matrix4x4 obj2tangent;
         public void Init(
             MeshFilter meshFilter ,Vector3 normal)
         {
             MeshFilter = meshFilter;
-            Normal = normal.normalized;
+            _faceData.Normal = normal.normalized;
+            
+            
+            // normals[index] = normal;
+            if (Math.Abs(Math.Abs(normal.y) - 1.0) < Mathf.Epsilon)
+            {
+                if (normal.y > 0)
+                {
+                    _faceData.BiNormal = Vector3.forward;
+                }
+                else
+                {
+                    _faceData.BiNormal = Vector3.back;
+                }
+            }
+            else
+            {
+                _faceData.BiNormal = Vector3.up;
+                
+            }
+            Vector3 tangent = Vector3.Cross(normal, _faceData.BiNormal);
+            Vector3 biTangent = -1*Vector3.Cross(normal,tangent);
             //unity 左手坐标系
-            axisA = new Vector3(normal.y,normal.z,normal.x);
-            axisA = axisA.normalized;
-            axisB = Vector3.Cross(normal, axisA);
-            axisB = axisB.normalized;
+            _faceData.axisY = biTangent;
+            _faceData.axisX = tangent;
+            
+            // tangent2obj = new Matrix4x4(new Vector4(tangent.x,biTangent.x,_faceData.Normal.x,0),
+            //     new Vector4(tangent.y,biTangent.y,_faceData.Normal.y,0),
+            //     new Vector4(tangent.z,biTangent.z,_faceData.Normal.z,0),
+            //     new Vector4(0,0,0,1));
+            //
+            // obj2tangent = tangent2obj.inverse;
         }
 
         public void Update(int resolution,VertexGenerate vertexGenerate,PlanetSettingData planetSettingData,GPUShapeGenerate gpuShapeGenerate)
@@ -39,11 +96,7 @@ namespace Planet
             if (Resolution != resolution)
             {
                 Resolution = resolution;
-                vertices = new Vector3[(Resolution ) * (Resolution )];
-                uvs = new Vector2[(Resolution ) * (Resolution )];
-                formatuvs = new Vector2[(Resolution ) * (Resolution )];
-                var multiple = (Resolution - 1) * (Resolution - 1);
-                triangles = new int[multiple*2*3];
+                _meshData.UpdateSize(resolution);
             }
 
             UpdateShape(vertexGenerate,planetSettingData,gpuShapeGenerate);
@@ -56,24 +109,24 @@ namespace Planet
             var start = System.DateTime.Now;
             if (planetSettingData.gpu && Resolution >=8)
             {
-                gpuShapeGenerate.UpdateShape(vertexGenerate,vertices,triangles,uvs,
+                gpuShapeGenerate.UpdateShape(vertexGenerate,_meshData,
                     Resolution,
-                    Normal,axisA,axisB,planetSettingData);
+                    _faceData,planetSettingData);
 
-                for (int i = 0; i < uvs.Length; i++)
+                for (int i = 0; i < _meshData.uvs.Length; i++)
                 {
-                    objectHeight.AddValue(uvs[i].x);
-                    depth.AddValue(uvs[i].y);
-                    formatuvs[i].y = uvs[i].y;
+                    objectHeight.AddValue(_meshData.uvs[i].x);
+                    depth.AddValue(_meshData.uvs[i].y);
+                    _meshData.formatuvs[i].y = _meshData.uvs[i].y;
                 }
-                FillShapeMesh(MeshFilter,vertices);
+                FillShapeMesh(MeshFilter,_meshData.vertices);
             }    
             else
             {
 
                 UpdateShape0(vertexGenerate);
                 
-                FillShapeMesh(MeshFilter,vertices);
+                FillShapeMesh(MeshFilter,_meshData.vertices);
             }
             var end = System.DateTime.Now;
 
@@ -90,8 +143,8 @@ namespace Planet
                 {
                     var index = x + y * (Resolution);
                     Vector2 percent = new Vector2(x, y) / (Resolution - 1);
-                    var pos = Normal + 2 * axisB * (percent.x - 0.5f) + 2 * axisA * (percent.y - 0.5f);
-                    vertices[index] = vertexGenerate.Execulate(pos.normalized);
+                    var pos = _faceData.Normal + 2 * _faceData.axisX * (percent.x - 0.5f) + 2 * _faceData.axisY * (percent.y - 0.5f);
+                    _meshData.vertices[index] = vertexGenerate.Execulate(pos.normalized);
                     // vertices[index] = (2 * axisB * (percent.x - 0.5f) + 2 * axisA * (percent.y - 0.5f))*shapeGenerate.shapeSettting.radius;
                     if (x < Resolution - 1 && y < Resolution - 1)
                     {
@@ -107,13 +160,13 @@ namespace Planet
                             
                         //
                         // //逆时针
-                        triangles[indicIndex++] = index;
-                        triangles[indicIndex++] = index + Resolution;
-                        triangles[indicIndex++] = index + 1 + Resolution;
+                        _meshData.triangles[indicIndex++] = index;
+                        _meshData.triangles[indicIndex++] = index + Resolution;
+                        _meshData.triangles[indicIndex++] = index + 1 + Resolution;
                             
-                        triangles[indicIndex++] = index + 1 + Resolution;
-                        triangles[indicIndex++] = index + 1;
-                        triangles[indicIndex++] = index;
+                        _meshData.triangles[indicIndex++] = index + 1 + Resolution;
+                        _meshData.triangles[indicIndex++] = index + 1;
+                        _meshData.triangles[indicIndex++] = index;
                     }
                 }
             }
@@ -125,9 +178,10 @@ namespace Planet
             var mesh = meshFilter.sharedMesh;
             mesh.Clear();
             mesh.vertices = _vertices;
-            mesh.triangles = triangles;
-            mesh.uv = formatuvs;
-            mesh.RecalculateNormals();
+            mesh.triangles = _meshData.triangles;
+            mesh.normals = _meshData.normals;
+            mesh.tangents = _meshData.tangents;
+            mesh.uv = _meshData.formatuvs;
             mesh.RecalculateBounds();
         }
 
@@ -136,13 +190,13 @@ namespace Planet
             //gpuShapeGenerate.UpdateShape(uvs,colorGenerate);
             if (planetSettingData.gpu && Resolution >=8)
             {
-                gpuShapeGenerate.UpdateColorFormatHeight(Resolution,colorGenerate.ColorSettting,formatuvs,vertices,uvs);
+                gpuShapeGenerate.UpdateColorFormatHeight(Resolution,colorGenerate.ColorSettting,_meshData);
             }
             else
             {
-                for (int i = 0; i < uvs.Length; i++)
+                for (int i = 0; i < _meshData.uvs.Length; i++)
                 {
-                    formatuvs[i].x = colorGenerate.UpdateColorFormatHeight(vertices[i], uvs[i].x);
+                    _meshData.formatuvs[i].x = colorGenerate.UpdateColorFormatHeight(_meshData.vertices[i], _meshData.uvs[i].x);
                 }
             }
 
@@ -153,12 +207,31 @@ namespace Planet
         private void ResetUV(MeshFilter meshFilter)
         {
             var mesh = meshFilter.sharedMesh;
-            mesh.uv = formatuvs;
+            mesh.uv = _meshData.formatuvs;
         }
 
         public void UpdateMaterial(Material sharedMaterial)
         {
-            MeshFilter.GetComponent<MeshRenderer>().sharedMaterial = sharedMaterial;
+            var meshRender = MeshFilter.GetComponent<MeshRenderer>();
+            meshRender.sharedMaterial = sharedMaterial;
+        }
+
+        public void OnDrawGizmos(float radius)
+        {
+            if (MeshFilter.gameObject.activeInHierarchy)
+            {
+                Gizmos.color = Color.red;
+                for (int i = 0; i < _meshData.vertices.Length; i++)
+                {
+                    Gizmos.DrawLine(MeshFilter.transform.position+_meshData.vertices[i],MeshFilter.transform.position+_meshData.vertices[i]+10.0f*radius/256.0f*_meshData.normals[i]);    
+                }
+                Gizmos.color = Color.blue;
+                for (int i = 0; i < _meshData.vertices.Length; i++)
+                {
+                    Vector3 tangent = new Vector3(_meshData.tangents[i].x,_meshData.tangents[i].y,_meshData.tangents[i].z);
+                    Gizmos.DrawLine(MeshFilter.transform.position+_meshData.vertices[i],MeshFilter.transform.position+_meshData.vertices[i]+4*radius/256.0f*(tangent));    
+                }
+            }
         }
     }
 }

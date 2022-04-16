@@ -15,6 +15,7 @@ namespace Planet.Setting
         public Material oceanMaterial;
         public Gradient oceanMainLand;
         public Gradient ocean;
+        
         public LatitudeSetting[] LatitudeSettings = new LatitudeSetting[1];
 
         public bool noiseEnable;
@@ -22,6 +23,8 @@ namespace Planet.Setting
         public NoiseLayer[] noiseLayers;
         [Range(0,0.1f)]
         public float blendRange = 0.03f;
+
+        public WaterRender waterRender;
 
         public ColorSettingBuffer[] GetBaseBuffer()
         {
@@ -52,6 +55,8 @@ namespace Planet.Setting
 
             return latitudeSettingBuffers;
         }
+
+
     }
 
     [System.Serializable]

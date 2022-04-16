@@ -11,7 +11,7 @@ namespace Planet
         private PlanetMesh _planetMesh;
         private Editor shapeEditor;
         private Editor colorEditor;
-
+        
         private void OnEnable()
         {
             _planetMesh = target as PlanetMesh;
@@ -41,10 +41,13 @@ namespace Planet
                 base.OnInspectorGUI();
                 if (check.changed)
                 {
-                    _planetMesh.Generate();
+                    _planetMesh.OnBaseUpdate();
                 }
             }
 
+            _planetMesh.showNormalAndTangent = GUILayout.Toggle(_planetMesh.showNormalAndTangent, "Normal");
+            
+            
             DrawSettingEditor(_planetMesh.ShapeSettting, _planetMesh.OnShapeSetttingUpdated,
                 ref _planetMesh.shapeSetttingsFoldOut, ref shapeEditor);
             DrawSettingEditor(_planetMesh.ColorSettting, _planetMesh.OnColorSetttingUpdated,

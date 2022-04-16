@@ -29,7 +29,7 @@ namespace Planet
             {
                 if (texture2D != null)
                 {
-                    Object.Destroy(texture2D);
+                    Object.DestroyImmediate(texture2D);
                 }
 
                 texture2D = new Texture2D(ColorSettting.resolution , ColorSettting.LatitudeSettings.Length,
