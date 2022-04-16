@@ -22,13 +22,14 @@
         [HideInInspector] _MainTex("BaseMap", 2D) = "white" {}
         [HideInInspector] _Color("Base Color", Color) = (0.5, 0.5, 0.5, 1)
         [HideInInspector] _SampleGI("SampleGI", float) = 0.0 // needed from bakedlit
-        [HideInInspector] _minmax("Min Max",Vector) =(0,0,0,0) 
-        [HideInInspector] radius("Radius",float) =1
+        _minmax("Min Max",Vector) =(0,0,0,0) 
+        radius("Radius",float) =1
 
         [Range(0,100)]
         _alphaMultiplier("alphaMultiplier",float) = 10
         [Range(0,1)]
         _waterSmoothness("waterSmoothness",float) = 0.1  
+
     }
     
     SubShader

@@ -25,6 +25,17 @@ namespace Planet
             var multiple = (Resolution - 1) * (Resolution - 1);
             triangles = new int[multiple*2*3];
         }
+
+        public void FillData(MeshFilter meshFilter)
+        {
+            vertices = meshFilter.sharedMesh.vertices;
+            normals = meshFilter.sharedMesh.normals;
+            tangents = meshFilter.sharedMesh.tangents;
+            
+            uvs = meshFilter.sharedMesh.uv;
+            formatuvs = meshFilter.sharedMesh.uv;
+            triangles = meshFilter.sharedMesh.triangles;
+        }
     }
 
     public class FaceData
@@ -49,10 +60,9 @@ namespace Planet
         public MinMax objectHeight = new MinMax();
         public MinMax depth = new MinMax();
 
-        // public Matrix4x4 tangent2obj;
-        // public Matrix4x4 obj2tangent;
+        
         public void Init(
-            MeshFilter meshFilter ,Vector3 normal)
+            MeshFilter meshFilter ,Vector3 normal,int resolution)
         {
             MeshFilter = meshFilter;
             _faceData.Normal = normal.normalized;
@@ -81,12 +91,7 @@ namespace Planet
             _faceData.axisY = biTangent;
             _faceData.axisX = tangent;
             
-            // tangent2obj = new Matrix4x4(new Vector4(tangent.x,biTangent.x,_faceData.Normal.x,0),
-            //     new Vector4(tangent.y,biTangent.y,_faceData.Normal.y,0),
-            //     new Vector4(tangent.z,biTangent.z,_faceData.Normal.z,0),
-            //     new Vector4(0,0,0,1));
-            //
-            // obj2tangent = tangent2obj.inverse;
+            _meshData.FillData(MeshFilter);
         }
 
         public void Update(int resolution,VertexGenerate vertexGenerate,PlanetSettingData planetSettingData,GPUShapeGenerate gpuShapeGenerate)
@@ -129,8 +134,6 @@ namespace Planet
                 FillShapeMesh(MeshFilter,_meshData.vertices);
             }
             var end = System.DateTime.Now;
-
-            
         }
 
         private void UpdateShape0(VertexGenerate vertexGenerate)

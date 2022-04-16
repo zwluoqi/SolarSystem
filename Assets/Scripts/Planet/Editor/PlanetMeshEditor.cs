@@ -11,6 +11,7 @@ namespace Planet
         private PlanetMesh _planetMesh;
         private Editor shapeEditor;
         private Editor colorEditor;
+        private Editor waterRenderEditor;
         
         private void OnEnable()
         {
@@ -52,6 +53,12 @@ namespace Planet
                 ref _planetMesh.shapeSetttingsFoldOut, ref shapeEditor);
             DrawSettingEditor(_planetMesh.ColorSettting, _planetMesh.OnColorSetttingUpdated,
                 ref _planetMesh.colorSetttingsFoldOut, ref colorEditor);
+            DrawSettingEditor(_planetMesh.WaterRenderSettting, _planetMesh.OnWaterRenderSetttingUpdated,
+                ref _planetMesh.waterRenderSetttingsFoldOut, ref waterRenderEditor);
+
+            
+            
+            _planetMesh.UpdateMaterialProperty();
             if (GUILayout.Button("Mesh存储"))
             {
                 SaveMesh(1);

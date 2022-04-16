@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Planet.Setting;
+using UnityEngine;
 
 namespace Planet
 {
@@ -25,11 +26,11 @@ namespace Planet
             gpuShapeGenerate = new GPUShapeGenerate();
         }
 
-        public void Init(MeshFilter[] meshFilterss)
+        public void Init(MeshFilter[] meshFilterss,int resolution)
         {
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].Init(meshFilterss[i],faceNormal[i]);
+                faceGenerates[i].Init(meshFilterss[i],faceNormal[i],resolution);
             }
         }
 
@@ -54,43 +55,66 @@ namespace Planet
         public void UpdateColor(ColorGenerate colorGenerate, PlanetSettingData planetSettingData)
         {
             // Material sharedMaterial;
-            if (sharedMaterial == null)
-            {
-                if (planetSettingData.ocean)
-                {
-                    sharedMaterial = Object.Instantiate(colorGenerate.ColorSettting.oceanMaterial);
-                }
-                else
-                {
-                    sharedMaterial = Object.Instantiate(colorGenerate.ColorSettting.material);
-                }
-            }
+            InitShareMaterial(colorGenerate.ColorSettting,planetSettingData);
             colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
-
-            sharedMaterial.color = colorGenerate.Execute();
-            sharedMaterial.mainTexture = texture2D;
-            sharedMaterial.SetFloat("radius",planetSettingData.radius);
-            if (colorGenerate.ColorSettting.waterRender.waterLayers.Length != 0)
-            {
-                sharedMaterial.SetVectorArray("waves",colorGenerate.ColorSettting.waterRender.ToWaveVec4s());    
-            }
-            sharedMaterial.SetInt("waveLen",colorGenerate.ColorSettting.waterRender.waterLayers.Length);
-            sharedMaterial.SetFloat("_alphaMultiplier",colorGenerate.ColorSettting.waterRender.alphaMultiplier);
-            sharedMaterial.SetFloat("_waterSmoothness",colorGenerate.ColorSettting.waterRender.waterSmoothness);
             for (int i = 0; i < 6; i++)
             {
                 faceGenerates[i].UpdateMaterial(sharedMaterial);
                 faceGenerates[i].FormatHeight(planetSettingData,gpuShapeGenerate,colorGenerate);
             }
-            // MinMax objectHeight = new MinMax();
+
+            UpdateMaterialProperty(colorGenerate.ColorSettting,colorGenerate.WaterRenderSetting,planetSettingData);
+        }
+
+        private void InitShareMaterial(ColorSettting colorSettting,PlanetSettingData planetSettingData)
+        {
+            if (sharedMaterial == null)
+            {
+                if (planetSettingData.ocean)
+                {
+                    sharedMaterial = Object.Instantiate(colorSettting.oceanMaterial);
+                }
+                else
+                {
+                    sharedMaterial = Object.Instantiate(colorSettting.material);
+                }
+            }
+        }
+
+        public void UpdateMaterialProperty(ColorSettting colorSettting,WaterRenderSetting waterRenderSetting, PlanetSettingData planetSettingData)
+        {
+            #if UNITY_EDITOR
+            InitShareMaterial(colorSettting,planetSettingData);
+            sharedMaterial.color = colorSettting.tinyColor;
+            sharedMaterial.mainTexture = texture2D;
+            sharedMaterial.SetFloat("radius",planetSettingData.radius);
+            
             MinMax depth = new MinMax();
             for (int i = 0; i < 6; i++)
             {
                 depth.AddValue(faceGenerates[i].depth);
             }
             sharedMaterial.SetVector("_minmax",new Vector4(depth.min,depth.max,0,0));
-        }
 
+            UpdateWaterRender(waterRenderSetting);
+            #endif
+        }
+        
+
+
+        public void UpdateWaterRender(WaterRenderSetting waterRenderSettting)
+        {
+            if (waterRenderSettting.waterLayers.Length != 0)
+            {
+                sharedMaterial.SetVectorArray("waves",waterRenderSettting.ToWaveVec4s());    
+            }
+            sharedMaterial.SetInt("waveLen",waterRenderSettting.waterLayers.Length);
+            sharedMaterial.SetFloat("_alphaMultiplier",waterRenderSettting.alphaMultiplier);
+            sharedMaterial.SetFloat("_waterSmoothness",waterRenderSettting.waterSmoothness);
+        }
+        
+        
+        
         public void Dispose()
         {
             gpuShapeGenerate?.Dispose();

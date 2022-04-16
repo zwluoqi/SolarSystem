@@ -41,14 +41,15 @@ namespace Planet.Setting
         }
     }
 
-    [System.Serializable]
-    public class WaterRender
+    [CreateAssetMenu()]
+    public class WaterRenderSetting:ScriptableObject
     {
         public const int shaderWaveMaxSize = 12;
 
         public WaterLayer[] waterLayers = new WaterLayer[1];
         public float alphaMultiplier = 10;
         public float waterSmoothness = 0.1f;
+        
         
         public Vector4[] ToWaveVec4s()
         {

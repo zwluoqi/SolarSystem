@@ -33,9 +33,6 @@ float3 vertex,float height){
         float weight = invLerp(-blendRange,blendRange,dist);
         latitudeIndex *= (1- weight);
         latitudeIndex += i*weight;
-        //if(height>latitudes[i].startHeight){
-        //    latitudeIndex = i;
-        //}
     }
 
     return (latitudeIndex*1.0f) / max(1,(latitudeCount-1));            

@@ -4,6 +4,7 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
+//https://developer.nvidia.com/sites/all/modules/custom/gpugems/books/GPUGems/gpugems_ch01.html
 
 struct Attributes
 {
@@ -102,7 +103,7 @@ Varyings vert(Attributes input)
 
     half3 normalTS;
     half3 tangentTS;
-    half offset = MultipleWavePositoin(input.positionOS,normalTS,tangentTS);
+    float offset = MultipleWavePositoin(input.positionOS.xyz,normalTS,tangentTS);
     half3 normalOS = mul(vertexTangentToObj,float4(normalTS,0.0)).xyz;
     half4 tangentOS = half4(mul(vertexTangentToObj,float4(tangentTS,.0)).xyz,input.tangentOS.w);   
     half3 positionOS = input.positionOS.xyz +normalOS*offset;
@@ -123,8 +124,7 @@ Varyings vert(Attributes input)
     
     
     float oceanDepth = invLerp(_minmax.x,0,sourceUV.y);
-    //float top = invLerp(0,_minmax.y,sourceUV.y);
-    //float x = 0.5*ocean+0.5*top;
+
     output.uv.x = oceanDepth;
     output.uv.y = sourceUV.x;
     //smoothness
@@ -146,7 +146,7 @@ half4 frag(Varyings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-    return float4(0.5*(1.0+input.normalOS.xyz),1);
+    //return float4(0.5*(1.0+input.normalWS.xyz),1);
     half2 uv = input.uv;
     half4 texColor = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap, uv);
     half3 color = texColor.rgb * _BaseColor.rgb;
@@ -172,7 +172,7 @@ half4 frag(Varyings input) : SV_Target
 #endif
 
     //color = MixFog(color, input.fogCoord);
-    alpha = OutputAlpha(alpha, _Surface);
+    //alpha = OutputAlpha(alpha, _Surface);
 
     return half4(color, alpha);
 }

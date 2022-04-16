@@ -6,11 +6,13 @@ namespace Planet
     public class ColorGenerate
     {
         public ColorSettting ColorSettting;
+        public WaterRenderSetting WaterRenderSetting;
         public LayerNoiseGenerate layerNoiseGenerate = new LayerNoiseGenerate();
         private Color[] colors;
-        public void UpdateConfig(ColorSettting colorSettting)
+        public void UpdateConfig(ColorSettting colorSettting,WaterRenderSetting waterRenderSetting)
         {
             this.ColorSettting = colorSettting;
+            this.WaterRenderSetting = waterRenderSetting;
             if (colors == null || colors.Length != ColorSettting.resolution  * ColorSettting.LatitudeSettings.Length)
             {
                 colors = new Color[ColorSettting.resolution  * ColorSettting.LatitudeSettings.Length];
@@ -18,11 +20,6 @@ namespace Planet
             this.layerNoiseGenerate.UpdateConfig(colorSettting.noiseEnable,colorSettting.noiseSetting,colorSettting.noiseLayers);
         }
         
-        public Color Execute()
-        {
-            return ColorSettting.tinyColor;
-        }
-
         public void GenerateTexture2D(ref Texture2D texture2D,PlanetSettingData planetSettingData)
         {
             if (texture2D == null || ColorSettting.resolution != texture2D.width || ColorSettting.LatitudeSettings.Length != texture2D.height)

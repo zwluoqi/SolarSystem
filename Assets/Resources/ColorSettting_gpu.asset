@@ -15,8 +15,8 @@ MonoBehaviour:
   computeShader: {fileID: 7200000, guid: 3398e87db692b0447b6b2f57e43ca92d, type: 3}
   resolution: 32
   tinyColor: {r: 1, g: 1, b: 1, a: 1}
-  material: {fileID: 2100000, guid: 816b6b0d731bfc4408cf6b33794eab6c, type: 2}
-  oceanMaterial: {fileID: 2100000, guid: 0d0ce418e74d488489f0d238e0cc50ea, type: 2}
+  material: {fileID: 2100000, guid: 7c69e4b9ee1bca944bdb092aecabc2fa, type: 2}
+  oceanMaterial: {fileID: 2100000, guid: 16e85c7251a665a479fb0c271abf7867, type: 2}
   oceanMainLand:
     serializedVersion: 2
     key0: {r: 1, g: 1, b: 1, a: 1}
