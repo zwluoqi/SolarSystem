@@ -56,13 +56,18 @@ namespace Planet
             DrawSettingEditor(_planetMesh.WaterRenderSettting, _planetMesh.OnWaterRenderSetttingUpdated,
                 ref _planetMesh.waterRenderSetttingsFoldOut, ref waterRenderEditor);
 
-            
-            
+
+            if (!_planetMesh.inited)
+            {
+                _planetMesh.OnBaseUpdate();
+            }
             _planetMesh.UpdateMaterialProperty();
             if (GUILayout.Button("Mesh存储"))
             {
                 SaveMesh(1);
             }
+            
+            
         }
 
         private void DrawSettingEditor(ScriptableObject planetMeshShapeSettting, Action onShapeSetttingUpdated, ref bool planetMeshShpaeSetttingsFoldOut, ref Editor editor)

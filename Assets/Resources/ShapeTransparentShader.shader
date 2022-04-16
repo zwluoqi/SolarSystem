@@ -24,6 +24,7 @@
         [HideInInspector] _SampleGI("SampleGI", float) = 0.0 // needed from bakedlit
         _minmax("Min Max",Vector) =(0,0,0,0) 
         radius("Radius",float) =1
+        waveLen("waveLen",int) =1
 
         [Range(0,100)]
         _alphaMultiplier("alphaMultiplier",float) = 10

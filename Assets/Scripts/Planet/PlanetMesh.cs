@@ -40,6 +40,8 @@ public class PlanetMesh : MonoBehaviour
     
     [NonSerialized]
     public bool showNormalAndTangent;
+    [NonSerialized]
+    public bool inited = false;
     
 
     private ColorGenerate _colorGenerate = new ColorGenerate();
@@ -59,6 +61,7 @@ public class PlanetMesh : MonoBehaviour
 
     void UpdateBase()
     {
+        this.inited = true;
         InitedMeshed();
         
         _vertexGenerate .UpdateConfig(ShapeSettting);
@@ -197,13 +200,6 @@ public class PlanetMesh : MonoBehaviour
         UpdateBase();
         Debug.LogWarning(this.name+"OnBaseUpdate End");
     }
-
-    // private void OnValidate()
-    // {
-    //     Debug.LogWarning(this.name+"OnValidate Start");
-    //     UpdateBase();
-    //     Debug.LogWarning(this.name+"OnValidate End");
-    // }
 
     private void OnDrawGizmos()
     {

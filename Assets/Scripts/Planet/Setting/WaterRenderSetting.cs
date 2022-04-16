@@ -5,10 +5,10 @@ namespace Planet.Setting
     [System.Serializable]
     public class WaterSetting
     {
-        [Tooltip("振幅")]
-        public float Strength = 0.1f;
         [Tooltip("频率")]
-        public float Frenque = 0.01f;
+        public float Frenque = 0.1f;
+        [Tooltip("振幅")]
+        public float Strength = 0.01f;
         [Tooltip("速率")]
         public float Speed = 0.1f;
         [Tooltip("方向")]
@@ -16,13 +16,13 @@ namespace Planet.Setting
 
         public Vector4 ToVec4()
         {
-            return new Vector4(Strength,Frenque,Speed,Dir);
+            return new Vector4(Frenque,Strength,Speed,Dir);
         }
 
         public WaterSetting()
         {
-            Strength = 0.1f;
-            Frenque = 0.01f;
+            Frenque = 0.1f;
+            Strength = 0.01f;
             Speed = 0.1f;
             Dir = 0;
         }

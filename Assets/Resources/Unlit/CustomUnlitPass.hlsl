@@ -62,21 +62,28 @@ float GetWavePosition(float3 tangentPos,float4 wave,out float3 normal,out float3
     return H;
 }
 
-float MultipleWavePositoin(float3 tangentPos,out float3 normal,out float3 tangent){
-    float offset;
+float3 MultipleWavePositoin(float4x4 vertexTangentToObj,float3 pos,out float3 normal,out float3 tangent){
+    float3 newPos = pos;
+
     float3 tmpNormal;
     float3 tmpTangent;
+    
     float tmpOffset;
     for(int i=0;i<waveLen;i+=1){
-        tmpOffset = GetWavePosition(tangentPos,waves[0],tmpNormal,tmpTangent);
-        normal += tmpNormal;
-        tangent += tmpTangent;
-        offset += tmpOffset;
-    }
+        tmpOffset = GetWavePosition(pos,waves[i],tmpNormal,tmpTangent);
+        
+        half3 normalOS = mul(vertexTangentToObj,float4(tmpNormal,.0)).xyz;
+        half3 tangentOS = mul(vertexTangentToObj,float4(tmpTangent,.0)).xyz;   
+        half3 offsetPos = normalOS*tmpOffset;
     
-    //normal = float3(0,0,1);
-    //tangent = float3(1,0,0);
-    return offset;
+        newPos += offsetPos;
+        normal += normalOS;
+        tangent += tangentOS;
+    }
+    normal = normalize(normal);
+    tangent = normalize(tangent);
+    
+    return newPos;
 }
 
 
@@ -101,12 +108,10 @@ Varyings vert(Attributes input)
                                     half4(0,0,0,1)
                                     );
 
-    half3 normalTS;
-    half3 tangentTS;
-    float offset = MultipleWavePositoin(input.positionOS.xyz,normalTS,tangentTS);
-    half3 normalOS = mul(vertexTangentToObj,float4(normalTS,0.0)).xyz;
-    half4 tangentOS = half4(mul(vertexTangentToObj,float4(tangentTS,.0)).xyz,input.tangentOS.w);   
-    half3 positionOS = input.positionOS.xyz +normalOS*offset;
+    half3 normalOS;
+    half3 tangentOS3;
+    float3 positionOS = MultipleWavePositoin(vertexTangentToObj,input.positionOS.xyz,normalOS,tangentOS3);
+    half4 tangentOS = half4(tangentOS3,input.tangentOS.w);
 
     VertexPositionInputs vertexInput = GetVertexPositionInputs(positionOS.xyz);
     output.vertex = vertexInput.positionCS;
@@ -146,7 +151,7 @@ half4 frag(Varyings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-    //return float4(0.5*(1.0+input.normalWS.xyz),1);
+    //return float4(0.5*(1.0+input.normalOS.xyz),1);
     half2 uv = input.uv;
     half4 texColor = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap, uv);
     half3 color = texColor.rgb * _BaseColor.rgb;

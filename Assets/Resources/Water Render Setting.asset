@@ -16,16 +16,16 @@ MonoBehaviour:
   - enable: 1
     useMask: 0
     waterSetting:
-      Strength: 0.1
-      Frenque: 0.01
+      Frenque: 0.1
+      Strength: 0.001
       Speed: 0.1
-      Dir: -13.58
+      Dir: 0
   - enable: 1
     useMask: 0
     waterSetting:
-      Strength: 0.1
-      Frenque: 0.01
-      Speed: 0.1
-      Dir: -13.58
-  alphaMultiplier: 10
-  waterSmoothness: 0.1
+      Frenque: 0.05
+      Strength: 0.001
+      Speed: 0.12
+      Dir: 45
+  alphaMultiplier: 10.48
+  waterSmoothness: 0.02

@@ -59,7 +59,6 @@ namespace Planet
             colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].UpdateMaterial(sharedMaterial);
                 faceGenerates[i].FormatHeight(planetSettingData,gpuShapeGenerate,colorGenerate);
             }
 
@@ -77,6 +76,11 @@ namespace Planet
                 else
                 {
                     sharedMaterial = Object.Instantiate(colorSettting.material);
+                }
+
+                for (int i = 0; i < 6; i++)
+                {
+                    faceGenerates[i].UpdateMaterial(sharedMaterial);
                 }
             }
         }
