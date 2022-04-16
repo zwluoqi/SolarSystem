@@ -117,14 +117,14 @@ namespace Planet
                     depth.AddValue(_meshData.uvs[i].y);
                     _meshData.formatuvs[i].y = _meshData.uvs[i].y;
                 }
-                FillShapeMesh(MeshFilter,_meshData.vertices);
+                FillShapeMesh(MeshFilter,_meshData.vertices,planetSettingData);
             }    
             else
             {
 
                 UpdateShape0(vertexGenerate);
                 
-                FillShapeMesh(MeshFilter,_meshData.vertices);
+                FillShapeMesh(MeshFilter,_meshData.vertices,planetSettingData);
             }
             var end = System.DateTime.Now;
         }
@@ -169,15 +169,23 @@ namespace Planet
 
         }
 
-        private void FillShapeMesh(MeshFilter meshFilter,Vector3[] _vertices)
+        private void FillShapeMesh(MeshFilter meshFilter,Vector3[] _vertices,PlanetSettingData planetSettingData)
         {
             var mesh = meshFilter.sharedMesh;
             mesh.Clear();
             mesh.vertices = _vertices;
             mesh.triangles = _meshData.triangles;
-            mesh.normals = _meshData.normals;
-            mesh.tangents = _meshData.tangents;
             mesh.uv = _meshData.formatuvs;
+            if (planetSettingData.ocean)
+            {
+                mesh.normals = _meshData.normals;
+                mesh.tangents = _meshData.tangents;
+            }
+            else
+            {
+                mesh.RecalculateNormals();
+                mesh.RecalculateTangents();
+            }
             mesh.RecalculateBounds();
         }
 
