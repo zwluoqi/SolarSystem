@@ -5,24 +5,25 @@ namespace Planet
 {
     public class TerrainGenerate:System.IDisposable
     {
-        private GPUShapeGenerate gpuShapeGenerate;
         private Texture2D texture2D;
         private Material sharedMaterial;
 
         private FaceGenerate[] faceGenerates;
 
         readonly Vector3[] faceNormal = {Vector3.up,Vector3.forward, Vector3.left, Vector3.back, Vector3.right,  Vector3.down};
+        private VertexGenerate vertexGenerate;
+        private ColorGenerate colorGenerate;
 
 
-        
-        public TerrainGenerate()
+        public TerrainGenerate(VertexGenerate _vertexGenerate,ColorGenerate _colorGenerate)
         {
+            this.vertexGenerate = _vertexGenerate;
+            this.colorGenerate = _colorGenerate;
             faceGenerates = new FaceGenerate[6];
             for (int i = 0; i < 6; i++)
             {
                 faceGenerates[i] = new FaceGenerate(faceNormal[i]);
             }
-            gpuShapeGenerate = new GPUShapeGenerate();
         }
 
         public void UpdateMeshFilter(MeshFilter[] meshFilterss,int resolution)
@@ -32,33 +33,86 @@ namespace Planet
                 faceGenerates[i].UpdateMeshFilter(meshFilterss[i],resolution);
             }
         }
+        
+        public bool UpdateLod(Vector3 cameraPos)
+        {
+#if UNITY_EDITOR
+            int nearestIndex = -1;
+            int farestIndex = -1;
+            float nearestDistance = float.MaxValue;
+            float farestDistance = float.MinValue;
+                
+            for (int i = 0; i < 6; i++)
+            {
+                var pos = faceGenerates[i].GetPlanePos(vertexGenerate);
+                var dir = cameraPos - pos;
+                if (dir.magnitude < nearestDistance)
+                {
+                    nearestDistance = dir.magnitude;
+                    nearestIndex = i;
+                }
 
-        public void UpdateMesh(int resolution, VertexGenerate vertexGenerate, PlanetSettingData planetSettingData, ColorGenerate colorGenerate)
+                if (dir.magnitude > farestDistance)
+                {
+                    farestDistance = dir.magnitude;
+                    farestIndex = i;
+                }
+            }
+
+            bool refreshShape = false;
+            for (int i = 0; i < 6; i++)
+            {
+                if (nearestIndex == i)
+                {
+                    refreshShape |=faceGenerates[i].UpdateLODLevel(0);
+                }
+                else if (farestIndex == i)
+                {
+                    refreshShape |=faceGenerates[i].UpdateLODLevel(4);
+                }
+                else
+                {
+                    refreshShape |=faceGenerates[i].UpdateLODLevel(2);
+                }
+            }
+
+            return refreshShape;
+#endif
+        }
+
+        public void UpdateMesh(int resolution ,PlanetSettingData planetSettingData)
         {
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].Update(resolution,vertexGenerate,planetSettingData,gpuShapeGenerate);
+                faceGenerates[i].Update(resolution,vertexGenerate,planetSettingData);
             }
-            UpdateColor(colorGenerate,planetSettingData);
+            UpdateColor(planetSettingData);
         }
         
-        public void UpdateShape(VertexGenerate vertexGenerate,  PlanetSettingData planetSettingData,ColorGenerate colorGenerate)
+        public void UpdateShape( PlanetSettingData planetSettingData)
         {
+            System.DateTime start = System.DateTime.Now;
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].UpdateShape(vertexGenerate,planetSettingData,gpuShapeGenerate);
+                faceGenerates[i].UpdateShape(vertexGenerate,planetSettingData);
             }
-            UpdateColor(colorGenerate,planetSettingData);
+
+            var start2 = System.DateTime.Now;
+            var spaceShape = start2 - start;
+            Debug.LogWarning("shape:"+spaceShape.TotalMilliseconds+"ms");
+            UpdateColor(planetSettingData);
+            var spaceColor = System.DateTime.Now - start2;
+            Debug.LogWarning("color:"+spaceColor.TotalMilliseconds+"ms");
         }
         
-        public void UpdateColor(ColorGenerate colorGenerate, PlanetSettingData planetSettingData)
+        public void UpdateColor( PlanetSettingData planetSettingData)
         {
             // Material sharedMaterial;
             InitShareMaterial(colorGenerate.ColorSettting,planetSettingData);
             colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].FormatHeight(planetSettingData,gpuShapeGenerate,colorGenerate);
+                faceGenerates[i].FormatHeight(planetSettingData,colorGenerate);
             }
 
             UpdateMaterialProperty(colorGenerate.ColorSettting,colorGenerate.WaterRenderSetting,planetSettingData);
@@ -121,7 +175,10 @@ namespace Planet
         
         public void Dispose()
         {
-            gpuShapeGenerate?.Dispose();
+            for (int i = 0; i < 6; i++)
+            {
+                faceGenerates[i].Dispose();
+            }
             Object.Destroy(texture2D);
         }
 

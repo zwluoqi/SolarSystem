@@ -70,9 +70,9 @@ public class PlanetMesh : MonoBehaviour
         _colorGenerate .UpdateConfig(ColorSettting,WaterRenderSettting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
-        _terrainGenerate.UpdateMesh(resolution,_vertexGenerate,settingData,_colorGenerate);
+        _terrainGenerate.UpdateMesh(resolution,settingData);
         settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateMesh(oceanResolution,_vertexGenerate,settingData,_colorGenerate);
+        _oceanTerrainGenerate.UpdateMesh(oceanResolution,settingData);
     }
 
     private void InitedMeshed()
@@ -83,7 +83,7 @@ public class PlanetMesh : MonoBehaviour
         {
             if (_terrainGenerate == null)
             {
-                _terrainGenerate = new TerrainGenerate();
+                _terrainGenerate = new TerrainGenerate(_vertexGenerate,_colorGenerate);
             }
             _terrainGenerate.UpdateMeshFilter(_meshFilterss,resolution);
             refresh = true;
@@ -94,7 +94,7 @@ public class PlanetMesh : MonoBehaviour
         {
             if (_oceanTerrainGenerate == null)
             {
-                _oceanTerrainGenerate = new TerrainGenerate();
+                _oceanTerrainGenerate = new TerrainGenerate(_vertexGenerate,_colorGenerate);
             }
             _oceanTerrainGenerate.UpdateMeshFilter(_oceanMeshFilterss,oceanResolution);
             refresh = true;
@@ -171,9 +171,9 @@ public class PlanetMesh : MonoBehaviour
         _vertexGenerate .UpdateConfig(ShapeSettting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
-        _terrainGenerate.UpdateShape(_vertexGenerate,settingData,_colorGenerate);
+        _terrainGenerate.UpdateShape(settingData);
         settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateShape(_vertexGenerate,settingData,_colorGenerate);
+        _oceanTerrainGenerate.UpdateShape(settingData);
     }
     
     void UpdateColor()
@@ -182,9 +182,9 @@ public class PlanetMesh : MonoBehaviour
         _colorGenerate .UpdateConfig(ColorSettting,WaterRenderSettting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
-        _terrainGenerate.UpdateColor(_colorGenerate,settingData);
+        _terrainGenerate.UpdateColor(settingData);
         settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateColor(_colorGenerate,settingData);
+        _oceanTerrainGenerate.UpdateColor(settingData);
     }
 
     void UpdateWaterRender()
@@ -195,9 +195,11 @@ public class PlanetMesh : MonoBehaviour
 
     public void OnShapeSetttingUpdated()
     {
+        System.DateTime start = System.DateTime.Now;
         Debug.LogWarning(this.name+"OnShapeSetttingUpdated Start");
         UpdateShape();
-        Debug.LogWarning(this.name+"OnShapeSetttingUpdated End");
+        var space = System.DateTime.Now - start;
+        Debug.LogWarning(this.name+"OnShapeSetttingUpdated End:"+space.TotalMilliseconds+"MS");
     }
 
     public void OnColorSetttingUpdated()
@@ -237,5 +239,22 @@ public class PlanetMesh : MonoBehaviour
         Debug.LogWarning(this.name+"UpdateWaterRender Start");
         UpdateWaterRender();
         Debug.LogWarning(this.name+"UpdateWaterRender End");
+    }
+
+    public void UpdateLod()
+    {
+        PlanetSettingData settingData = GetPlanetSettingData();
+        var refreshShape = _terrainGenerate.UpdateLod(Camera.main.transform.position);
+        if (refreshShape)
+        {
+            settingData.ocean = false;
+            _terrainGenerate.UpdateShape(settingData);
+        }
+        _oceanTerrainGenerate.UpdateLod(Camera.main.transform.position);
+        if (refreshShape)
+        {
+            settingData.ocean = true;
+            _oceanTerrainGenerate.UpdateShape(settingData);
+        }
     }
 }
