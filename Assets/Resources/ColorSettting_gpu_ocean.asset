@@ -106,7 +106,7 @@ MonoBehaviour:
       m_NumColorKeys: 4
       m_NumAlphaKeys: 2
     tinyColor: {r: 1, g: 0, b: 0, a: 1}
-    tinyPercent: 0.283
+    tinyPercent: 0.434
     startHeight: 0
   - gradient:
       serializedVersion: 2
@@ -138,7 +138,7 @@ MonoBehaviour:
       m_NumColorKeys: 3
       m_NumAlphaKeys: 2
     tinyColor: {r: 1, g: 0.7206769, b: 0, a: 1}
-    tinyPercent: 0.292
+    tinyPercent: 0.454
     startHeight: 0.393
   - gradient:
       serializedVersion: 2
@@ -170,17 +170,32 @@ MonoBehaviour:
       m_NumColorKeys: 6
       m_NumAlphaKeys: 2
     tinyColor: {r: 1, g: 1, b: 1, a: 1}
-    tinyPercent: 0.646
+    tinyPercent: 0.564
     startHeight: 0.607
   noiseEnable: 1
   noiseSetting:
-    layer: 1
-    layerRoughness: 2
-    layerMultiple: 0.7
-    strength: 0.12
-    roughness: 0.03
-    offset: {x: 9.22, y: 0, z: 0}
-    minValue: 0.5
     noiseType: 0
+    simpleNoise:
+      layer: 4
+      layerRoughness: 2.11
+      layerMultiple: 0.25
+      strength: 0.09
+      roughness: 0.18
+      offset: {x: 0, y: 0, z: 0}
+      minValue: 0
+    uberNoise:
+      layer: 1
+      layerRoughness: 2
+      layerMultiple: 0.5
+      strength: 1
+      roughness: 1
+      offset: {x: 0, y: 0, z: 0}
+      minValue: 0
+      lfPerturbFeatures: 0
+      lfSharpness: 0
+      lfAltitudeErosion: 0
+      lfRidgeErosion: 0
+      lfSlopeErosion: 0
+      lfLacunarity: 0
   noiseLayers: []
   blendRange: 0.0224

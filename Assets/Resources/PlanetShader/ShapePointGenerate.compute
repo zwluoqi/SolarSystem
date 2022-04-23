@@ -3,14 +3,13 @@
 #pragma kernel CSMainTriangle
 
 #include "ShapeGenerate.hlsl"
+
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWStructuredBuffer<float3> vertices;
 RWStructuredBuffer<float3> normals;
 RWStructuredBuffer<float4> tangents;
-
 RWStructuredBuffer<int> triangles;
-
 RWStructuredBuffer<float2> uvs;
 
 int Resolution;
@@ -23,7 +22,6 @@ float ocean;
 StructuredBuffer<ShapeSettting> shapeSetting;
 StructuredBuffer<NoiseLayer> noiseLayerSettings;
 int noiseAddLayerCount;
-//RStructuredBuffer<ColorSettting> colorSetting;
 
 
 [numthreads(1,1,1)]

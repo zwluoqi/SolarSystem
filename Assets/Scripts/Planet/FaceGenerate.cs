@@ -2,6 +2,7 @@ using System;
 using Planet.Setting;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Planet
 {
@@ -38,9 +39,8 @@ namespace Planet
         public Vector3 axisX;
     }
     
-    public class FaceGenerate:System.IDisposable
+    public class FaceGenerate
     {
-        private GPUShapeGenerate gpuShapeGenerate = new GPUShapeGenerate();
         public MeshFilter MeshFilter;
 
         public int realResolution
@@ -111,7 +111,7 @@ namespace Planet
             return false;
         }
 
-        public void Update(int resolution,VertexGenerate vertexGenerate,PlanetSettingData planetSettingData)
+        public void Update(int resolution,VertexGenerate vertexGenerate,PlanetSettingData planetSettingData,GPUShapeGenerate gpuShapeGenerate)
         {
             if (configResolution != resolution)
             {
@@ -119,7 +119,7 @@ namespace Planet
                 _meshData.UpdateSize(realResolution);
             }
 
-            UpdateShape(vertexGenerate,planetSettingData);
+            UpdateShape(vertexGenerate,planetSettingData,gpuShapeGenerate);
         }
 
         public Vector3 GetPlanePos(VertexGenerate vertexGenerate)
@@ -132,7 +132,7 @@ namespace Planet
         }
         
 
-        public void UpdateShape(VertexGenerate vertexGenerate,PlanetSettingData planetSettingData)
+        public void UpdateShape(VertexGenerate vertexGenerate,PlanetSettingData planetSettingData,GPUShapeGenerate gpuShapeGenerate)
         {
             objectHeight = new MinMax();
             depth = new MinMax();
@@ -205,6 +205,7 @@ namespace Planet
         {
             var mesh = meshFilter.sharedMesh;
             mesh.Clear();
+            mesh.indexFormat = IndexFormat.UInt32;
             mesh.vertices = _vertices;
             mesh.triangles = _meshData.triangles;
             mesh.uv = _meshData.formatuvs;
@@ -221,7 +222,7 @@ namespace Planet
             mesh.RecalculateBounds();
         }
 
-        public void FormatHeight(PlanetSettingData planetSettingData,ColorGenerate colorGenerate)
+        public void FormatHeight(PlanetSettingData planetSettingData,ColorGenerate colorGenerate,GPUShapeGenerate gpuShapeGenerate)
         {
             //gpuShapeGenerate.UpdateShape(uvs,colorGenerate);
             if (planetSettingData.gpu && realResolution >=8)
@@ -268,11 +269,6 @@ namespace Planet
                     Gizmos.DrawLine(MeshFilter.transform.position+_meshData.vertices[i],MeshFilter.transform.position+_meshData.vertices[i]+4*radius/256.0f*(tangent));    
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            gpuShapeGenerate?.Dispose();
         }
     }
 }

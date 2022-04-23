@@ -19,4 +19,5 @@ float3 ShapeGenerateExeculate(ShapeSettting shapeSettting, float3 normalPos,Stru
     return normalPos*(1+noiseValue.y*mainland)*shapeSettting.radius;
 }
 
+
 #endif

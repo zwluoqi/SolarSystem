@@ -17,7 +17,6 @@ namespace Planet
 
         public void SetData(MeshData meshData)
         {
-            
             _bufferVertices.SetData(meshData.vertices);
             _bufferTriangles.SetData(meshData.triangles);
         }
@@ -117,8 +116,6 @@ namespace Planet
                 throw new Exception("分辨率低于8不允许使用GPU");
             }
             CreateShapeBuffer(vertexGenerate,_meshData);
-            
-            _meshDataComputerBuffer.SetData(_meshData);
             
             _baseShapeComputeBuffer.SetData(vertexGenerate.shapeSettting.ToBaseBuffer());
             _noiseLayerComputeBuffer.SetData(vertexGenerate.shapeSettting.ToLayerBuffer());

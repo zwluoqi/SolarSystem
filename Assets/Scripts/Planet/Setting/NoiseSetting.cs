@@ -8,9 +8,59 @@ namespace Planet.Setting
     {
         Simplex,
         Rigidbody,
+        Erosion,
+        Uber,
     }
     [System.Serializable]
     public class NoiseSetting
+    {
+        public NoiseType noiseType;
+
+        public SimpleNoise simpleNoise;
+        public UberNoise uberNoise;
+        
+        public NoiseSettingBuffer ToBuffer()
+        {
+            NoiseSettingBuffer buffer = new NoiseSettingBuffer();
+
+            buffer.noiseType = (int)this.noiseType;
+            if (this.noiseType == NoiseType.Uber)
+            {
+                buffer.layer = uberNoise.layer;
+                buffer.layerRoughness = uberNoise.layerRoughness;
+                buffer.layerMultiple = uberNoise.layerMultiple;
+                buffer.strength = uberNoise.strength;
+                buffer.roughness = uberNoise.roughness;
+                buffer.offset = uberNoise.offset;
+                buffer.minValue = uberNoise.minValue;
+
+                buffer.lfPerturbFeatures = uberNoise.lfPerturbFeatures;
+                buffer.lfSharpness = uberNoise.lfSharpness;
+                buffer.lfAltitudeErosion = uberNoise.lfAltitudeErosion;
+                buffer.lfRidgeErosion = uberNoise.lfRidgeErosion;
+                buffer.lfSlopeErosion = uberNoise.lfSlopeErosion;
+                buffer.lfLacunarity = uberNoise.lfLacunarity;
+            }
+            else
+            {
+                buffer.layer = simpleNoise.layer;
+                buffer.layerRoughness = simpleNoise.layerRoughness;
+                buffer.layerMultiple = simpleNoise.layerMultiple;
+                buffer.strength = simpleNoise.strength;
+                buffer.roughness = simpleNoise.roughness;
+                buffer.offset = simpleNoise.offset;
+                buffer.minValue = simpleNoise.minValue;
+            }
+            
+            return buffer;
+        }
+        
+    }
+
+
+
+    [System.Serializable]
+    public class SimpleNoise
     {
         [Range(1,20)]
         public int layer=1;
@@ -19,24 +69,30 @@ namespace Planet.Setting
         public float strength = 1;
         public float roughness = 1;
         public Vector3 offset = Vector3.zero;
-        //public NoiseType noiseType =  NoiseType.SIMPLE;
         public float minValue = 0.0f;
-        public NoiseType noiseType;
-
-        public NoiseSettingBuffer ToBuffer()
-        {
-            NoiseSettingBuffer buffer = new NoiseSettingBuffer();
-            buffer.layer = this.layer;
-            buffer.layerRoughness = this.layerRoughness;
-            buffer.layerMultiple = this.layerMultiple;
-            buffer.strength = this.strength;
-            buffer.roughness = this.roughness;
-            buffer.offset = this.offset;
-            buffer.minValue = this.minValue;
-            buffer.noiseType = (int)this.noiseType;
-            return buffer;
-        }
     }
+    
+    [System.Serializable]
+    public class UberNoise:SimpleNoise
+    {
+        [Tooltip("方向扰动")]
+        public float lfPerturbFeatures;
+        [Tooltip("锐化")]
+        [Range(-1,1)]
+        public float lfSharpness;
+        [Tooltip("高地侵蚀")]
+        [Range(0,1)]
+        public float lfAltitudeErosion;
+        [Tooltip("山脊侵蚀")]
+        [Range(0,100)]
+        public float lfRidgeErosion;
+        [Tooltip("斜坡侵蚀")]
+        [Range(0,100)]
+        public float lfSlopeErosion;
+        [Tooltip("缺顶")]
+        public float lfLacunarity;
+    }
+
     
     public struct NoiseSettingBuffer
     {
@@ -49,5 +105,14 @@ namespace Planet.Setting
         //public NoiseType noiseType =  NoiseType.SIMPLE;
         public float minValue ;
         public int noiseType;
+        
+        
+        public float lfPerturbFeatures;
+        public float lfSharpness;
+        public float lfAltitudeErosion;
+        public float lfRidgeErosion;
+        public float lfSlopeErosion;
+        public float lfLacunarity;
     }
+
 }

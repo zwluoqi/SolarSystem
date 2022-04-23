@@ -18,14 +18,14 @@ namespace Planet
             this._noiseSetting = baseNoise;
             this._noiseLayers = layers;
             
-            this._noiseGenerate = new NoiseGenerate(_noiseSetting);
+            this._noiseGenerate = new NoiseGenerate(_noiseSetting.simpleNoise,_noiseSetting.noiseType);
             if (this._addNoiseGenerate == null ||
                 this._addNoiseGenerate.Length != _noiseLayers.Length)
             {
                 this._addNoiseGenerate = new NoiseGenerate[_noiseLayers.Length];
                 for (int i = 0; i < _noiseLayers.Length; i++)
                 {
-                    this._addNoiseGenerate[i] = new NoiseGenerate(_noiseLayers[i].noiseSetting);
+                    this._addNoiseGenerate[i] = new NoiseGenerate(_noiseLayers[i].noiseSetting.simpleNoise,_noiseSetting.noiseType);
                 }
             }
         }
@@ -76,12 +76,13 @@ namespace Planet
     internal class NoiseGenerate
     {
         private Noise _noise = new Noise();
-        private NoiseSetting _noiseSettting;
+        private SimpleNoise _noiseSettting;
+        private NoiseType simpleNoiseType;
 
-
-        public NoiseGenerate(NoiseSetting noiseSetting)
+        public NoiseGenerate(SimpleNoise simpleNoise,NoiseType noiseType)
         {
-            this._noiseSettting = noiseSetting;
+            this._noiseSettting = simpleNoise;
+            this.simpleNoiseType = noiseType;
             // _noise = new Noise(System.DateTime.Now.Millisecond);
         }
 
@@ -93,7 +94,7 @@ namespace Planet
             float layerStrength = 1;
             for (int i = 0; i < _noiseSettting.layer; i++)
             {
-                var v = ExecuteImp(_noiseSettting.noiseType,normalPos*roughness+this._noiseSettting.offset)*layerStrength;
+                var v = ExecuteImp(simpleNoiseType,normalPos*roughness+this._noiseSettting.offset)*layerStrength;
                 value += v;
                 layerStrength *= _noiseSettting.layerMultiple;
                 roughness *= _noiseSettting.layerRoughness;

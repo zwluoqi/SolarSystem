@@ -71,7 +71,5 @@ namespace Planet.Setting
         public float radius;
 
         public NoiseLayerBuffer noiseLayer;
-        // public float _noiseEnable;
-        // public NoiseSettingBuffer _noiseSetting;
     }
 }

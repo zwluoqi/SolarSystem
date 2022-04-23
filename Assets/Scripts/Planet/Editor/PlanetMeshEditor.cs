@@ -58,7 +58,7 @@ namespace Planet
 
 
             _planetMesh.UpdateMaterialProperty();
-            _planetMesh.UpdateLod();
+            // _planetMesh.UpdateLod();
             if (GUILayout.Button("Mesh存储"))
             {
                 SaveMesh(1);

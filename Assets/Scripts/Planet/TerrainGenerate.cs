@@ -5,6 +5,7 @@ namespace Planet
 {
     public class TerrainGenerate:System.IDisposable
     {
+        private GPUShapeGenerate gpuShapeGenerate = new GPUShapeGenerate();
         private Texture2D texture2D;
         private Material sharedMaterial;
 
@@ -84,7 +85,7 @@ namespace Planet
         {
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].Update(resolution,vertexGenerate,planetSettingData);
+                faceGenerates[i].Update(resolution,vertexGenerate,planetSettingData,gpuShapeGenerate);
             }
             UpdateColor(planetSettingData);
         }
@@ -94,7 +95,7 @@ namespace Planet
             System.DateTime start = System.DateTime.Now;
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].UpdateShape(vertexGenerate,planetSettingData);
+                faceGenerates[i].UpdateShape(vertexGenerate,planetSettingData,gpuShapeGenerate);
             }
 
             var start2 = System.DateTime.Now;
@@ -112,7 +113,7 @@ namespace Planet
             colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
             for (int i = 0; i < 6; i++)
             {
-                faceGenerates[i].FormatHeight(planetSettingData,colorGenerate);
+                faceGenerates[i].FormatHeight(planetSettingData,colorGenerate,gpuShapeGenerate);
             }
 
             UpdateMaterialProperty(colorGenerate.ColorSettting,colorGenerate.WaterRenderSetting,planetSettingData);
@@ -175,10 +176,7 @@ namespace Planet
         
         public void Dispose()
         {
-            for (int i = 0; i < 6; i++)
-            {
-                faceGenerates[i].Dispose();
-            }
+            gpuShapeGenerate.Dispose();
             Object.Destroy(texture2D);
         }
 
