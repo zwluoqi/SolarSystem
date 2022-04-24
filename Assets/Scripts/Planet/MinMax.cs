@@ -5,6 +5,12 @@
         public float min = float.MaxValue;
         public float max = float.MinValue;
 
+        public void Clear()
+        {
+            min = float.MaxValue;
+            max = float.MinValue;
+        }
+        
         public void AddValue(float value)
         {
             if (value < min)

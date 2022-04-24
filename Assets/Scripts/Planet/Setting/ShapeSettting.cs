@@ -15,20 +15,20 @@ namespace Planet.Setting
         
         public NoiseLayer[] _noiseLayers;
 
-        public ShapeSettingBuffer[] ToBaseBuffer()
+        public ShapeSettingBuffer[] ToBaseBuffer(RandomData randomSetting)
         {
             ShapeSettingBuffer[] settingBuffer = new ShapeSettingBuffer[1];
             settingBuffer[0].radius = this.radius;
-            settingBuffer[0].noiseLayer = new NoiseLayerBuffer(this._noiseEnable?1.0f:0.0f,_noiseSetting.ToBuffer());
+            settingBuffer[0].noiseLayer = new NoiseLayerBuffer(this._noiseEnable?1.0f:0.0f,_noiseSetting.ToBuffer(randomSetting));
             return settingBuffer;
         }
 
-        public NoiseLayerBuffer[] ToLayerBuffer()
+        public NoiseLayerBuffer[] ToLayerBuffer(RandomData randomSetting)
         {
             NoiseLayerBuffer[] noiseLayerBuffers = new NoiseLayerBuffer[this._noiseLayers.Length];
             for (int i = 0; i < this._noiseLayers.Length; i++)
             {
-                noiseLayerBuffers[i] = this._noiseLayers[i].ToBuffer();
+                noiseLayerBuffers[i] = this._noiseLayers[i].ToBuffer(randomSetting);
             }
 
             return noiseLayerBuffers;
@@ -42,12 +42,12 @@ namespace Planet.Setting
         public bool useMask = false;
         public NoiseSetting noiseSetting = default;
 
-        public NoiseLayerBuffer ToBuffer()
+        public NoiseLayerBuffer ToBuffer(RandomData randomSetting)
         {
             NoiseLayerBuffer buffer = new NoiseLayerBuffer();
             buffer.enable = this.enable?1.0f:0.0f;
             buffer.useMask = this.useMask?1.0f:0.0f;
-            buffer.noiseSetting = this.noiseSetting.ToBuffer();
+            buffer.noiseSetting = this.noiseSetting.ToBuffer(randomSetting);
             return buffer;
         }
     }

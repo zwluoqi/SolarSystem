@@ -109,27 +109,27 @@ namespace Planet
         public void UpdateColor( PlanetSettingData planetSettingData)
         {
             // Material sharedMaterial;
-            InitShareMaterial(colorGenerate.ColorSettting,planetSettingData);
+            InitShareMaterial(planetSettingData);
             colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
             for (int i = 0; i < 6; i++)
             {
                 faceGenerates[i].FormatHeight(planetSettingData,colorGenerate,gpuShapeGenerate);
             }
 
-            UpdateMaterialProperty(colorGenerate.ColorSettting,colorGenerate.WaterRenderSetting,planetSettingData);
+            UpdateMaterialProperty(planetSettingData);
         }
 
-        private void InitShareMaterial(ColorSettting colorSettting,PlanetSettingData planetSettingData)
+        private void InitShareMaterial(PlanetSettingData planetSettingData)
         {
             if (sharedMaterial == null)
             {
                 if (planetSettingData.ocean)
                 {
-                    sharedMaterial = Object.Instantiate(colorSettting.oceanMaterial);
+                    sharedMaterial = Object.Instantiate(colorGenerate.colorSettting.oceanMaterial);
                 }
                 else
                 {
-                    sharedMaterial = Object.Instantiate(colorSettting.material);
+                    sharedMaterial = Object.Instantiate(colorGenerate.colorSettting.material);
                 }
 
             }
@@ -140,11 +140,11 @@ namespace Planet
             }
         }
 
-        public void UpdateMaterialProperty(ColorSettting colorSettting,WaterRenderSetting waterRenderSetting, PlanetSettingData planetSettingData)
+        public void UpdateMaterialProperty( PlanetSettingData planetSettingData)
         {
             #if UNITY_EDITOR
-            InitShareMaterial(colorSettting,planetSettingData);
-            sharedMaterial.color = colorSettting.tinyColor;
+            InitShareMaterial(planetSettingData);
+            sharedMaterial.color = colorGenerate.colorSettting.tinyColor;
             sharedMaterial.mainTexture = texture2D;
             sharedMaterial.SetFloat("radius",planetSettingData.radius);
             
@@ -155,21 +155,21 @@ namespace Planet
             }
             sharedMaterial.SetVector("_minmax",new Vector4(depth.min,depth.max,0,0));
 
-            UpdateWaterRender(waterRenderSetting);
+            UpdateWaterRender();
             #endif
         }
         
 
 
-        public void UpdateWaterRender(WaterRenderSetting waterRenderSettting)
+        public void UpdateWaterRender()
         {
-            if (waterRenderSettting.waterLayers.Length != 0)
+            if (colorGenerate.waterRenderSetting.waterLayers.Length != 0)
             {
-                sharedMaterial.SetVectorArray("waves",waterRenderSettting.ToWaveVec4s());    
+                sharedMaterial.SetVectorArray("waves",colorGenerate.waterRenderSetting.ToWaveVec4s());    
             }
-            sharedMaterial.SetInt("waveLen",waterRenderSettting.waterLayers.Length);
-            sharedMaterial.SetFloat("_alphaMultiplier",waterRenderSettting.alphaMultiplier);
-            sharedMaterial.SetFloat("_waterSmoothness",waterRenderSettting.waterSmoothness);
+            sharedMaterial.SetInt("waveLen",colorGenerate.waterRenderSetting.waterLayers.Length);
+            sharedMaterial.SetFloat("_alphaMultiplier",colorGenerate.waterRenderSetting.alphaMultiplier);
+            sharedMaterial.SetFloat("_waterSmoothness",colorGenerate.waterRenderSetting.waterSmoothness);
         }
         
         

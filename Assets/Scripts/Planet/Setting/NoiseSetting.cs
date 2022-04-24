@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Planet.Setting
 {
@@ -19,7 +20,7 @@ namespace Planet.Setting
         public SimpleNoise simpleNoise;
         public UberNoise uberNoise;
         
-        public NoiseSettingBuffer ToBuffer()
+        public NoiseSettingBuffer ToBuffer(RandomData randomSetting)
         {
             NoiseSettingBuffer buffer = new NoiseSettingBuffer();
 
@@ -44,11 +45,12 @@ namespace Planet.Setting
             else
             {
                 buffer.layer = simpleNoise.layer;
-                buffer.layerRoughness = simpleNoise.layerRoughness;
-                buffer.layerMultiple = simpleNoise.layerMultiple;
-                buffer.strength = simpleNoise.strength;
-                buffer.roughness = simpleNoise.roughness;
-                buffer.offset = simpleNoise.offset;
+                buffer.layerRoughness = simpleNoise.layerRoughness*(1+randomSetting.frequencyAddPercent);
+                buffer.layerMultiple = simpleNoise.layerMultiple*(1+randomSetting.amplitudeAddPercent);
+                buffer.strength = simpleNoise.strength*(1+randomSetting.amplitudeAddPercent);
+                buffer.roughness = simpleNoise.roughness*(1+randomSetting.frequencyAddPercent);
+
+                buffer.offset = simpleNoise.offset + randomSetting.offsetRange;
                 buffer.minValue = simpleNoise.minValue;
             }
             

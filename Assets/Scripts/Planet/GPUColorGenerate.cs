@@ -33,18 +33,18 @@ namespace Planet
         }
 
         
-        public void UpdateColorFormatHeight(int resolution,ColorSettting colorSettting,ComputeBuffer _bufferVertices ,ComputeBuffer _bufferUVs,
+        public void UpdateColorFormatHeight(int resolution,ColorGenerate colorGenerate,ComputeBuffer _bufferVertices ,ComputeBuffer _bufferUVs,
             Vector2[] formatUVs)
         {
-            CreateColorBuffer(colorSettting,_bufferUVs);
+            CreateColorBuffer(colorGenerate.colorSettting,_bufferUVs);
 
             _bufferFormatUVs.SetData(formatUVs);
 
-            _baseColorComputeBuffer.SetData(colorSettting.GetBaseBuffer());
-            _noiseLayerComputeBuffer.SetData(colorSettting.GetNoiseLayersBuffer());
-            _latitudeComputeBuffer.SetData(colorSettting.GetLatitudeSettingsBuffer());
+            _baseColorComputeBuffer.SetData(colorGenerate.colorSettting.GetBaseBuffer(colorGenerate.randomGenerate.randomData));
+            _noiseLayerComputeBuffer.SetData(colorGenerate.colorSettting.GetNoiseLayersBuffer(colorGenerate.randomGenerate.randomData));
+            _latitudeComputeBuffer.SetData(colorGenerate.colorSettting.GetLatitudeSettingsBuffer(colorGenerate.randomGenerate.randomData));
 
-            var computeShader = colorSettting.computeShader;
+            var computeShader = colorGenerate.colorSettting.computeShader;
             
             computeShader.SetInt(ResolutionID, resolution);
             computeShader.SetInt(noiseAddLayerCountID, _noiseLayerComputeBuffer?.count ?? 0);

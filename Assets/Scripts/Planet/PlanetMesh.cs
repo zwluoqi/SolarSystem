@@ -26,6 +26,7 @@ public class PlanetMesh : MonoBehaviour
     public ShapeSettting ShapeSettting;
     public ColorSettting ColorSettting;
     public WaterRenderSetting WaterRenderSettting;
+    public RandomSetting randomSetting;
     
     public MeshFilter[] _meshFilterss;
     public MeshFilter[] _oceanMeshFilterss;
@@ -37,7 +38,9 @@ public class PlanetMesh : MonoBehaviour
     public bool colorSetttingsFoldOut;
     [NonSerialized]
     public bool waterRenderSetttingsFoldOut;
-    
+    [NonSerialized]
+    public bool randomSetttingsFoldOut;
+
     [NonSerialized]
     public bool showNormalAndTangent;
 
@@ -66,8 +69,8 @@ public class PlanetMesh : MonoBehaviour
 
     void Refresh()
     {
-        _vertexGenerate .UpdateConfig(ShapeSettting);
-        _colorGenerate .UpdateConfig(ColorSettting,WaterRenderSettting);
+        _vertexGenerate .Update(ShapeSettting,randomSetting);
+        _colorGenerate .Update(ColorSettting,WaterRenderSettting,randomSetting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
         _terrainGenerate.UpdateMesh(resolution,settingData);
@@ -168,7 +171,7 @@ public class PlanetMesh : MonoBehaviour
     void UpdateShape()
     {
         InitedMeshed();
-        _vertexGenerate .UpdateConfig(ShapeSettting);
+        _vertexGenerate .Update(ShapeSettting,randomSetting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
         _terrainGenerate.UpdateShape(settingData);
@@ -179,7 +182,7 @@ public class PlanetMesh : MonoBehaviour
     void UpdateColor()
     {
         InitedMeshed();
-        _colorGenerate .UpdateConfig(ColorSettting,WaterRenderSettting);
+        _colorGenerate .Update(ColorSettting,WaterRenderSettting,randomSetting);
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
         _terrainGenerate.UpdateColor(settingData);
@@ -189,7 +192,7 @@ public class PlanetMesh : MonoBehaviour
 
     void UpdateWaterRender()
     {
-        _oceanTerrainGenerate.UpdateWaterRender(WaterRenderSettting);
+        _oceanTerrainGenerate.UpdateWaterRender();
     }
 
 
@@ -229,9 +232,9 @@ public class PlanetMesh : MonoBehaviour
         InitedMeshed();
         PlanetSettingData settingData = GetPlanetSettingData();
         settingData.ocean = false;
-        _terrainGenerate.UpdateMaterialProperty(ColorSettting,WaterRenderSettting,settingData);
+        _terrainGenerate.UpdateMaterialProperty(settingData);
         settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateMaterialProperty(ColorSettting,WaterRenderSettting,settingData);
+        _oceanTerrainGenerate.UpdateMaterialProperty(settingData);
     }
 
     public void OnWaterRenderSetttingUpdated()
@@ -240,6 +243,15 @@ public class PlanetMesh : MonoBehaviour
         UpdateWaterRender();
         Debug.LogWarning(this.name+"UpdateWaterRender End");
     }
+
+
+    public void OnRandomSettingUpdate()
+    {
+        Debug.LogWarning(this.name+"UpdateWaterRender Start");
+        UpdateBase();
+        Debug.LogWarning(this.name+"UpdateWaterRender End");
+    }
+
 
     public void UpdateLod()
     {

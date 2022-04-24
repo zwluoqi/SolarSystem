@@ -56,10 +56,13 @@ namespace Planet
     {
         public ShapeSettting shapeSettting;
         private LayerNoiseGenerate _layerNoiseGenerate = new LayerNoiseGenerate();
+        public RandomGenerate randomGenerate = new RandomGenerate();
 
-        public void UpdateConfig(ShapeSettting shapeSettting)
+
+        public void Update( ShapeSettting _shapeSettting,RandomSetting randomSetting)
         {
-            this.shapeSettting = shapeSettting;
+            this.shapeSettting = _shapeSettting;
+            this.randomGenerate.Update(randomSetting);
             this._layerNoiseGenerate.UpdateConfig(this.shapeSettting._noiseEnable, this.shapeSettting._noiseSetting,
                 this.shapeSettting._noiseLayers);
         }
@@ -71,7 +74,54 @@ namespace Planet
             return (normalPos+noise.x*normalPos)*shapeSettting.radius;
         }
     }
-    
+
+    public class RandomGenerate
+    {
+        public RandomData randomData = new RandomData();
+
+        MinMax _minMax = new MinMax();
+        public void Update(RandomSetting _randomSetting)
+        {
+            
+            var x = GetRandomValue(_randomSetting.randomData.offsetRange.x);
+            var y = GetRandomValue(_randomSetting.randomData.offsetRange.y);
+            var z = GetRandomValue(_randomSetting.randomData.offsetRange.z);
+
+            
+            randomData.offsetRange = new Vector3(x,y,z);
+            randomData.amplitudeAddPercent = GetRandomValue(_randomSetting.randomData.amplitudeAddPercent);
+            randomData.frequencyAddPercent = GetRandomValue(_randomSetting.randomData.frequencyAddPercent);
+            randomData.latitudeTinyColorOffset = GetRandomValue(_randomSetting.randomData.latitudeTinyColorOffset);
+        }
+
+        private float GetRandomValue(float randomDataAmplitudeAddPercent)
+        {
+            _minMax.AddValue(0);
+            _minMax.AddValue(randomDataAmplitudeAddPercent);
+            var z = Random.Range(_minMax.min, _minMax.max);
+            _minMax.Clear();
+            return z;
+        }
+        
+        private float GetRandomValue(float x,float y)
+        {
+            _minMax.AddValue(x);
+            _minMax.AddValue(y);
+            var z = Random.Range(_minMax.min, _minMax.max);
+            _minMax.Clear();
+            return z;
+        }
+
+        public  Color Range( Color start, Color end)
+        {
+            var r = GetRandomValue(start.r,end.r);
+            var g = GetRandomValue(start.g,end.g);
+            var b = GetRandomValue(start.b,end.b);
+            var a = GetRandomValue(start.a,end.a);
+            return new Color(r, g, b, a);
+        }
+    }
+
 
     internal class NoiseGenerate
     {

@@ -23,7 +23,7 @@ MonoBehaviour:
       layerMultiple: -0.2
       strength: 0.1
       roughness: 1
-      offset: {x: 0, y: 0, z: 0}
+      offset: {x: 0, y: 1.69, z: 1.69}
       minValue: 0.54
     uberNoise:
       layer: 1

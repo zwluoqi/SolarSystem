@@ -55,6 +55,9 @@ namespace Planet
                 ref _planetMesh.colorSetttingsFoldOut, ref colorEditor);
             DrawSettingEditor(_planetMesh.WaterRenderSettting, _planetMesh.OnWaterRenderSetttingUpdated,
                 ref _planetMesh.waterRenderSetttingsFoldOut, ref waterRenderEditor);
+            DrawSettingEditor(_planetMesh.randomSetting, _planetMesh.OnRandomSettingUpdate,
+                ref _planetMesh.randomSetttingsFoldOut, ref waterRenderEditor);
+            
 
 
             _planetMesh.UpdateMaterialProperty();

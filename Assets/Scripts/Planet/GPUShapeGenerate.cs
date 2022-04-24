@@ -117,8 +117,8 @@ namespace Planet
             }
             CreateShapeBuffer(vertexGenerate,_meshData);
             
-            _baseShapeComputeBuffer.SetData(vertexGenerate.shapeSettting.ToBaseBuffer());
-            _noiseLayerComputeBuffer.SetData(vertexGenerate.shapeSettting.ToLayerBuffer());
+            _baseShapeComputeBuffer.SetData(vertexGenerate.shapeSettting.ToBaseBuffer(vertexGenerate.randomGenerate.randomData));
+            _noiseLayerComputeBuffer.SetData(vertexGenerate.shapeSettting.ToLayerBuffer(vertexGenerate.randomGenerate.randomData));
 
             var computeShader = vertexGenerate.shapeSettting.computeShader;
 
@@ -172,7 +172,7 @@ namespace Planet
         
 
 
-        public void UpdateColorFormatHeight(int resolution, ColorSettting colorGenerateColorSettting, MeshData meshData)
+        public void UpdateColorFormatHeight(int resolution, ColorGenerate colorGenerate, MeshData meshData)
         {
             if (resolution < 8)
             {
@@ -180,7 +180,7 @@ namespace Planet
             }
             _meshDataComputerBuffer._bufferVertices.SetData(meshData.vertices);
             _meshDataComputerBuffer._bufferUVs.SetData(meshData.uvs);
-            gpuColorGenerate.UpdateColorFormatHeight(resolution,colorGenerateColorSettting,_meshDataComputerBuffer._bufferVertices,_meshDataComputerBuffer._bufferUVs,meshData.formatuvs);
+            gpuColorGenerate.UpdateColorFormatHeight(resolution,colorGenerate,_meshDataComputerBuffer._bufferVertices,_meshDataComputerBuffer._bufferUVs,meshData.formatuvs);
         }
 
         public void Dispose()

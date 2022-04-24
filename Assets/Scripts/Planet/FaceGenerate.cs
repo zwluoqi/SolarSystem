@@ -227,7 +227,7 @@ namespace Planet
             //gpuShapeGenerate.UpdateShape(uvs,colorGenerate);
             if (planetSettingData.gpu && realResolution >=8)
             {
-                gpuShapeGenerate.UpdateColorFormatHeight(realResolution,colorGenerate.ColorSettting,_meshData);
+                gpuShapeGenerate.UpdateColorFormatHeight(realResolution,colorGenerate,_meshData);
             }
             else
             {
