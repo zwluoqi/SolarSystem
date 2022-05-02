@@ -13,7 +13,7 @@ public struct PlanetSettingData
     public float radius;
 }
 
-public class PlanetMesh : MonoBehaviour
+public class PlanetMesh : MonoBehaviour, ISettingUpdate
 {
 
     public bool GPU = true;
@@ -231,5 +231,10 @@ public class PlanetMesh : MonoBehaviour
         {
             _terrainGenerate.UpdateShape(settingData);
         }
+    }
+
+    public void UpdateSetting(ScriptableObject scriptableObject)
+    {
+        
     }
 }
