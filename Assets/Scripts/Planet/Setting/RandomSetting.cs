@@ -6,7 +6,7 @@ namespace Planet.Setting
     [CreateAssetMenu()]
     public class RandomSetting : ScriptableObject
     {
-
+        public bool enableRandom = false;
         [SerializeField]
         public RandomData randomData;
 
@@ -23,9 +23,13 @@ namespace Planet.Setting
         public Vector3 offsetRange;
 
         [Range(-1,1)]
-        public float latitudeTinyColorOffset;
+        public float latitudeTinyPercent;
 
         public Color startColor = Color.black;
         public Color endColor= Color.white;
+        [Range(2,8)]
+        public int latitudeKeyMaxNum = 3;
+        [Range(2,8)]
+        public int latitudeMaxNum = 3;
     }
 }

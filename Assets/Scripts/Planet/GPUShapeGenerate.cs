@@ -129,7 +129,7 @@ namespace Planet
             computeShader.SetVector(axisXID, _faceData.axisX);
             computeShader.SetVector(axisYID, _faceData.axisY);
             computeShader.SetInt(noiseAddLayerCountID, _noiseLayerComputeBuffer?.count ?? 0);
-            computeShader.SetFloat(oceanID,planetSettingData.ocean?1.0f:0.0f);
+            // computeShader.SetFloat(oceanID,planetSettingData.ocean?1.0f:0.0f);
             //获取内核函数的索引
             var kernelVertices = computeShader.FindKernel("CSMainVertices");
             computeShader.SetBuffer(kernelVertices,verticesID,_meshDataComputerBuffer._bufferVertices);

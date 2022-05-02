@@ -3,10 +3,11 @@
 
 #include "NoiseGenerate.hlsl"
 
-
+/*
 struct LatitudeSettingBuffer{
     float startHeight;
 };
+*/
 
 struct ColorSettting{
     NoiseLayer noiseLayer;    
@@ -19,7 +20,7 @@ float invLerp(float from, float to, float value){
 
 float ColorGenerateExeculate(ColorSettting colorSetting,
 StructuredBuffer<NoiseLayer> noiseLayerSettings,int layerCount,
-StructuredBuffer<LatitudeSettingBuffer> latitudes,int latitudeCount,
+StructuredBuffer<float> latitudes,int latitudeCount,
 float3 vertex,float height){
 
     height = (height + 1) * 0.5f;
@@ -29,7 +30,7 @@ float3 vertex,float height){
     float noiseHeight = noise.y + height;
     for (int i = 0; i < latitudeCount; i++)
     {
-        float dist = noiseHeight - latitudes[i].startHeight;              
+        float dist = noiseHeight - latitudes[i];              
         float weight = invLerp(-blendRange,blendRange,dist);
         latitudeIndex *= (1- weight);
         latitudeIndex += i*weight;

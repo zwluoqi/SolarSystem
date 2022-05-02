@@ -30,13 +30,13 @@ namespace Planet
             }
         }
 
-       public Vector2 Exculate(Vector3 normalPos)
+       public Vector2 Exculate(Vector3 pos)
        {
            Vector2 noise = Vector2.zero;
            Vector2 baseNoise = Vector2.zero;
            if (_noiseEnable)
            {
-               noise = this._noiseGenerate.Execute(normalPos);
+               noise = this._noiseGenerate.Execute(pos);
                baseNoise = noise;
            }
            for (int i = 0; i < this._addNoiseGenerate.Length; i++)
@@ -44,7 +44,7 @@ namespace Planet
                if (_noiseLayers[i].enable)
                {
                    var mask = _noiseLayers[i].useMask ? baseNoise : Vector2.one;
-                   noise += this._addNoiseGenerate[i].Execute(normalPos)*mask;
+                   noise += this._addNoiseGenerate[i].Execute(pos)*mask;
                }
            }
 
@@ -68,57 +68,10 @@ namespace Planet
         }
         
         //
-        public Vector3 Execulate(Vector3 normalPos)
+        public Vector3 Execulate(Vector3 pos,out Vector2 outNoise)
         {
-            var noise = this._layerNoiseGenerate.Exculate(normalPos);
-            return (normalPos+noise.x*normalPos)*shapeSettting.radius;
-        }
-    }
-
-    public class RandomGenerate
-    {
-        public RandomData randomData = new RandomData();
-
-        MinMax _minMax = new MinMax();
-        public void Update(RandomSetting _randomSetting)
-        {
-            
-            var x = GetRandomValue(_randomSetting.randomData.offsetRange.x);
-            var y = GetRandomValue(_randomSetting.randomData.offsetRange.y);
-            var z = GetRandomValue(_randomSetting.randomData.offsetRange.z);
-
-            
-            randomData.offsetRange = new Vector3(x,y,z);
-            randomData.amplitudeAddPercent = GetRandomValue(_randomSetting.randomData.amplitudeAddPercent);
-            randomData.frequencyAddPercent = GetRandomValue(_randomSetting.randomData.frequencyAddPercent);
-            randomData.latitudeTinyColorOffset = GetRandomValue(_randomSetting.randomData.latitudeTinyColorOffset);
-        }
-
-        private float GetRandomValue(float randomDataAmplitudeAddPercent)
-        {
-            _minMax.AddValue(0);
-            _minMax.AddValue(randomDataAmplitudeAddPercent);
-            var z = Random.Range(_minMax.min, _minMax.max);
-            _minMax.Clear();
-            return z;
-        }
-        
-        private float GetRandomValue(float x,float y)
-        {
-            _minMax.AddValue(x);
-            _minMax.AddValue(y);
-            var z = Random.Range(_minMax.min, _minMax.max);
-            _minMax.Clear();
-            return z;
-        }
-
-        public  Color Range( Color start, Color end)
-        {
-            var r = GetRandomValue(start.r,end.r);
-            var g = GetRandomValue(start.g,end.g);
-            var b = GetRandomValue(start.b,end.b);
-            var a = GetRandomValue(start.a,end.a);
-            return new Color(r, g, b, a);
+            outNoise = this._layerNoiseGenerate.Exculate(pos);
+            return pos*(1+outNoise.y)*shapeSettting.radius;
         }
     }
 
@@ -136,7 +89,7 @@ namespace Planet
             // _noise = new Noise(System.DateTime.Now.Millisecond);
         }
 
-        public Vector2 Execute(Vector3 normalPos)
+        public Vector2 Execute(Vector3 pos)
         {
             //(0,1);
             float value = 0;
@@ -144,7 +97,7 @@ namespace Planet
             float layerStrength = 1;
             for (int i = 0; i < _noiseSettting.layer; i++)
             {
-                var v = ExecuteImp(simpleNoiseType,normalPos*roughness+this._noiseSettting.offset)*layerStrength;
+                var v = ExecuteImp(simpleNoiseType,pos*roughness+this._noiseSettting.offset)*layerStrength;
                 value += v;
                 layerStrength *= _noiseSettting.layerMultiple;
                 roughness *= _noiseSettting.layerRoughness;

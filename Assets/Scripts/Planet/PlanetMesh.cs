@@ -10,7 +10,6 @@ using UnityEngine.SceneManagement;
 public struct PlanetSettingData
 {
     public bool gpu;
-    public bool ocean;
     public float radius;
 }
 
@@ -20,8 +19,6 @@ public class PlanetMesh : MonoBehaviour
     public bool GPU = true;
     [Range(2,256)]
     public int resolution = 4;
-    [Range(2,256)]
-    public int oceanResolution = 4;
     
     public ShapeSettting ShapeSettting;
     public ColorSettting ColorSettting;
@@ -29,7 +26,6 @@ public class PlanetMesh : MonoBehaviour
     public RandomSetting randomSetting;
     
     public MeshFilter[] _meshFilterss;
-    public MeshFilter[] _oceanMeshFilterss;
 
     
     [NonSerialized]
@@ -49,15 +45,12 @@ public class PlanetMesh : MonoBehaviour
     private VertexGenerate _vertexGenerate = new VertexGenerate();
 
     private TerrainGenerate _terrainGenerate;
-    private TerrainGenerate _oceanTerrainGenerate;
 
 
     private void OnDestroy()
     {
         _terrainGenerate.Dispose();
-        _oceanTerrainGenerate.Dispose();
         _terrainGenerate = null;
-        _oceanTerrainGenerate = null;
     }
 
     void UpdateBase()
@@ -72,10 +65,7 @@ public class PlanetMesh : MonoBehaviour
         _vertexGenerate .Update(ShapeSettting,randomSetting);
         _colorGenerate .Update(ColorSettting,WaterRenderSettting,randomSetting);
         PlanetSettingData settingData = GetPlanetSettingData();
-        settingData.ocean = false;
         _terrainGenerate.UpdateMesh(resolution,settingData);
-        settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateMesh(oceanResolution,settingData);
     }
 
     private void InitedMeshed()
@@ -92,17 +82,6 @@ public class PlanetMesh : MonoBehaviour
             refresh = true;
         }
         
-        var resetOceanTerrain = CreateMeshed(ref _oceanMeshFilterss,false);
-        if (resetOceanTerrain || _oceanTerrainGenerate == null)
-        {
-            if (_oceanTerrainGenerate == null)
-            {
-                _oceanTerrainGenerate = new TerrainGenerate(_vertexGenerate,_colorGenerate);
-            }
-            _oceanTerrainGenerate.UpdateMeshFilter(_oceanMeshFilterss,oceanResolution);
-            refresh = true;
-        }
-
         if (refresh)
         {
             Refresh();
@@ -173,10 +152,7 @@ public class PlanetMesh : MonoBehaviour
         InitedMeshed();
         _vertexGenerate .Update(ShapeSettting,randomSetting);
         PlanetSettingData settingData = GetPlanetSettingData();
-        settingData.ocean = false;
         _terrainGenerate.UpdateShape(settingData);
-        settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateShape(settingData);
     }
     
     void UpdateColor()
@@ -184,15 +160,12 @@ public class PlanetMesh : MonoBehaviour
         InitedMeshed();
         _colorGenerate .Update(ColorSettting,WaterRenderSettting,randomSetting);
         PlanetSettingData settingData = GetPlanetSettingData();
-        settingData.ocean = false;
         _terrainGenerate.UpdateColor(settingData);
-        settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateColor(settingData);
     }
 
     void UpdateWaterRender()
     {
-        _oceanTerrainGenerate.UpdateWaterRender();
+        _terrainGenerate.UpdateWaterRender();
     }
 
 
@@ -223,7 +196,7 @@ public class PlanetMesh : MonoBehaviour
     {
         if (showNormalAndTangent)
         {
-            _oceanTerrainGenerate.OnDrawGizmos(ShapeSettting.radius);
+            _terrainGenerate.OnDrawGizmos(ShapeSettting.radius);
         }
     }
 
@@ -231,10 +204,7 @@ public class PlanetMesh : MonoBehaviour
     {
         InitedMeshed();
         PlanetSettingData settingData = GetPlanetSettingData();
-        settingData.ocean = false;
         _terrainGenerate.UpdateMaterialProperty(settingData);
-        settingData.ocean = true;
-        _oceanTerrainGenerate.UpdateMaterialProperty(settingData);
     }
 
     public void OnWaterRenderSetttingUpdated()
@@ -247,9 +217,9 @@ public class PlanetMesh : MonoBehaviour
 
     public void OnRandomSettingUpdate()
     {
-        Debug.LogWarning(this.name+"UpdateWaterRender Start");
+        Debug.LogWarning(this.name+"OnRandomSettingUpdate Start");
         UpdateBase();
-        Debug.LogWarning(this.name+"UpdateWaterRender End");
+        Debug.LogWarning(this.name+"OnRandomSettingUpdate End");
     }
 
 
@@ -259,14 +229,7 @@ public class PlanetMesh : MonoBehaviour
         var refreshShape = _terrainGenerate.UpdateLod(Camera.main.transform.position);
         if (refreshShape)
         {
-            settingData.ocean = false;
             _terrainGenerate.UpdateShape(settingData);
-        }
-        _oceanTerrainGenerate.UpdateLod(Camera.main.transform.position);
-        if (refreshShape)
-        {
-            settingData.ocean = true;
-            _oceanTerrainGenerate.UpdateShape(settingData);
         }
     }
 }

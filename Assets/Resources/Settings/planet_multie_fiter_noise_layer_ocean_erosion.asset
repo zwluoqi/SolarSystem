@@ -19,10 +19,10 @@ MonoBehaviour:
     noiseType: 2
     simpleNoise:
       layer: 4
-      layerRoughness: 1.2
-      layerMultiple: 0.8
+      layerRoughness: 2.63
+      layerMultiple: 0.26
       strength: 0.09
-      roughness: 1.41
+      roughness: 1.44
       offset: {x: 0, y: 0, z: 0}
       minValue: 0
     uberNoise:
@@ -34,7 +34,7 @@ MonoBehaviour:
       offset: {x: 0, y: 0, z: 0}
       minValue: 0
       lfPerturbFeatures: 0
-      lfSharpness: -1
+      lfSharpness: 0
       lfAltitudeErosion: 0
       lfRidgeErosion: 0
       lfSlopeErosion: 0

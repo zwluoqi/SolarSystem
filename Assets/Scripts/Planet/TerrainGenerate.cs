@@ -6,7 +6,8 @@ namespace Planet
     public class TerrainGenerate:System.IDisposable
     {
         private GPUShapeGenerate gpuShapeGenerate = new GPUShapeGenerate();
-        private Texture2D texture2D;
+        private Texture2D mainTex;
+        private Texture2D oceanTex;
         private Material sharedMaterial;
 
         private FaceGenerate[] faceGenerates;
@@ -110,11 +111,14 @@ namespace Planet
         {
             // Material sharedMaterial;
             InitShareMaterial(planetSettingData);
-            colorGenerate.GenerateTexture2D(ref texture2D,planetSettingData);
+            colorGenerate.GenerateTexture2D(ref mainTex);
+            colorGenerate.GenerateOceanTexture2D(ref oceanTex);
+            Debug.LogWarning("Start UpdateColor:"+colorGenerate.colorSettting.LatitudeSettings.Length);
             for (int i = 0; i < 6; i++)
             {
                 faceGenerates[i].FormatHeight(planetSettingData,colorGenerate,gpuShapeGenerate);
             }
+            Debug.LogWarning("End UpdateColor:"+colorGenerate.colorSettting.LatitudeSettings.Length);
 
             UpdateMaterialProperty(planetSettingData);
         }
@@ -123,15 +127,13 @@ namespace Planet
         {
             if (sharedMaterial == null)
             {
-                if (planetSettingData.ocean)
-                {
-                    sharedMaterial = Object.Instantiate(colorGenerate.colorSettting.oceanMaterial);
-                }
-                else
-                {
-                    sharedMaterial = Object.Instantiate(colorGenerate.colorSettting.material);
-                }
+                sharedMaterial = Object.Instantiate(colorGenerate.colorSettting.material);
+            }
 
+            if (sharedMaterial.name != colorGenerate.colorSettting.material.name)
+            {
+                Object.DestroyImmediate(sharedMaterial);
+                sharedMaterial = Object.Instantiate(colorGenerate.colorSettting.material);
             }
             
             for (int i = 0; i < 6; i++)
@@ -145,7 +147,8 @@ namespace Planet
             #if UNITY_EDITOR
             InitShareMaterial(planetSettingData);
             sharedMaterial.color = colorGenerate.colorSettting.tinyColor;
-            sharedMaterial.mainTexture = texture2D;
+            sharedMaterial.mainTexture = mainTex;
+            sharedMaterial.SetTexture("_OceanMap",oceanTex);
             sharedMaterial.SetFloat("radius",planetSettingData.radius);
             
             MinMax depth = new MinMax();
@@ -177,7 +180,8 @@ namespace Planet
         public void Dispose()
         {
             gpuShapeGenerate.Dispose();
-            Object.Destroy(texture2D);
+            Object.Destroy(mainTex);
+            Object.Destroy(oceanTex);
         }
 
         public void OnDrawGizmos(float radius)

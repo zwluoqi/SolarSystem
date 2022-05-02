@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c98ad20ce2334995a52960179b94255c, type: 3}
   m_Name: Random Setting
   m_EditorClassIdentifier: 
+  enableRandom: 0
   randomData:
-    frequencyAddPercent: -0.1
+    frequencyAddPercent: -0.15
     amplitudeAddPercent: 0.5
-    offsetRange: {x: 1, y: 1, z: 1}
-    latitudeTinyColorOffset: 0.718
+    offsetRange: {x: 2.85, y: 1, z: 1}
+    latitudeTinyPercent: 0
     startColor: {r: 0, g: 0, b: 0, a: 1}
     endColor: {r: 1, g: 1, b: 1, a: 1}
+    latitudeKeyMaxNum: 3
+    latitudeMaxNum: 5

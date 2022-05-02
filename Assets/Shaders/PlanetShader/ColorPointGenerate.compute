@@ -12,7 +12,7 @@ RWStructuredBuffer<float2> formatuvs;
 
 StructuredBuffer<ColorSettting> colorSetting;
 StructuredBuffer<NoiseLayer> noiseLayerSettings;
-StructuredBuffer<LatitudeSettingBuffer> latitudes;
+StructuredBuffer<float> latitudes;
 int noiseAddLayerCount;
 int latitudeCount;
 int Resolution;

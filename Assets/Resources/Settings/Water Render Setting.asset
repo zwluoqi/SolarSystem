@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: Water Render Setting
   m_EditorClassIdentifier: 
   waterLayers:
-  - enable: 1
+  - enable: 0
     useMask: 0
     waterSetting:
       Frenque: 0.1
       Strength: 0.003
       Speed: 0.1
       Dir: 0
-  - enable: 1
+  - enable: 0
     useMask: 0
     waterSetting:
       Frenque: 0.1

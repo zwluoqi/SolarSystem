@@ -116,9 +116,9 @@ Varyings CustomLitPassVertex(Attributes input)
 
     float2 sourceUV = TRANSFORM_TEX(input.texcoord, _BaseMap);      
     //float ocean = invLerp(_minmax.x,0,sourceUV.y);
-    float depth = invLerp(0,_minmax.y,sourceUV.y);
+    //float depth = invLerp(0,_minmax.y,sourceUV.y);
     //float x = 0.5*ocean+0.5*top;
-    output.uv.x = depth;
+    output.uv.x = 0.5f;
     output.uv.y = sourceUV.x;
     //smoothness
     //output.color.x = (1.0-floor(ocean));

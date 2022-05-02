@@ -9,11 +9,11 @@ namespace Planet
     public class MeshData
     {
         public Vector3[] vertices;
-        public  Vector2[] uvs;
+        public  Vector2[] uvs;//x,高度（0,1）,y,深度(-1,1)
         public  int[] triangles;
         public  Vector3[] normals;
         public  Vector4[] tangents;
-        public  Vector2[] formatuvs;
+        public  Vector2[] formatuvs;//x latituderange，y,深度(-1,1)
 
         public void UpdateSize(int Resolution)
         {
@@ -47,9 +47,7 @@ namespace Planet
         {
             get
             {
-                var newResolution = configResolution / (2 << lodLev);
-                newResolution = Mathf.Max(2, newResolution);
-                return newResolution;
+                return configResolution;
             }
         }
         private int configResolution = 2;
@@ -143,22 +141,27 @@ namespace Planet
                     realResolution,
                     _faceData,planetSettingData);
 
-                for (int i = 0; i < _meshData.uvs.Length; i++)
-                {
-                    objectHeight.AddValue(_meshData.uvs[i].x);
-                    depth.AddValue(_meshData.uvs[i].y);
-                    _meshData.formatuvs[i].y = _meshData.uvs[i].y;
-                }
+                UpdateDepth();
                 FillShapeMesh(MeshFilter,_meshData.vertices,planetSettingData);
             }    
             else
             {
 
                 UpdateShape0(vertexGenerate);
-                
+                UpdateDepth();
                 FillShapeMesh(MeshFilter,_meshData.vertices,planetSettingData);
             }
             var end = System.DateTime.Now;
+        }
+
+        private void UpdateDepth()
+        {
+            for (int i = 0; i < _meshData.uvs.Length; i++)
+            {
+                objectHeight.AddValue(_meshData.uvs[i].x);
+                depth.AddValue(_meshData.uvs[i].y);
+                _meshData.formatuvs[i].y = _meshData.uvs[i].y;
+            }
         }
 
         private void UpdateShape0(VertexGenerate vertexGenerate)
@@ -172,20 +175,25 @@ namespace Planet
                     var index = x + y * (realResolution);
                     Vector2 percent = new Vector2(x, y) / (realResolution - 1);
                     var pos = _faceData.Normal + 2 * _faceData.axisX * (percent.x - 0.5f) + 2 * _faceData.axisY * (percent.y - 0.5f);
-                    _meshData.vertices[index] = vertexGenerate.Execulate(pos.normalized);
+                    if (vertexGenerate.shapeSettting.generateType == GenerateType.QuadSphere)
+                    {
+                        var p2 = new Vector3(pos.x*pos.x,pos.y*pos.y,pos.z*pos.z);
+                        var rx = pos.x*Mathf.Sqrt(1.0f - 0.5f * (p2.y + p2.z) + p2.y * p2.z / 3.0f);
+                        var ry = pos.y*Mathf.Sqrt(1.0f - 0.5f * (p2.z + p2.x) + p2.z * p2.x / 3.0f);
+                        var rz = pos.z*Mathf.Sqrt(1.0f - 0.5f * (p2.x + p2.y) + p2.x * p2.y / 3.0f);
+                        pos = (new Vector3(rx,ry,rz));
+                    }
+                    else
+                    {
+                        pos = pos.normalized;
+                    }
+                    
+                    _meshData.vertices[index] = vertexGenerate.Execulate(pos,out var outNoise );
+                    _meshData.uvs[index] = new Vector2(pos.y,outNoise.y);
+
                     // vertices[index] = (2 * axisB * (percent.x - 0.5f) + 2 * axisA * (percent.y - 0.5f))*shapeGenerate.shapeSettting.radius;
                     if (x < realResolution - 1 && y < realResolution - 1)
                     {
-                            
-                        //逆时针
-                        // triangles[indicIndex++] = index;
-                        // triangles[indicIndex++] = index + 1 + Resolution;
-                        // triangles[indicIndex++] = index + 1;
-                        //
-                        // triangles[indicIndex++] = index + 1 + Resolution;
-                        // triangles[indicIndex++] = index ;
-                        // triangles[indicIndex++] = index + Resolution;
-                            
                         //
                         // //逆时针
                         _meshData.triangles[indicIndex++] = index;
@@ -209,16 +217,8 @@ namespace Planet
             mesh.vertices = _vertices;
             mesh.triangles = _meshData.triangles;
             mesh.uv = _meshData.formatuvs;
-            if (planetSettingData.ocean)
-            {
-                mesh.normals = _meshData.normals;
-                mesh.tangents = _meshData.tangents;
-            }
-            else
-            {
-                mesh.RecalculateNormals();
-                mesh.RecalculateTangents();
-            }
+            mesh.RecalculateNormals();
+            mesh.RecalculateTangents();
             mesh.RecalculateBounds();
         }
 

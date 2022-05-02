@@ -27,16 +27,16 @@ MonoBehaviour:
       minValue: 0
     uberNoise:
       layer: 4
-      layerRoughness: 0.2
-      layerMultiple: 2
+      layerRoughness: 1.07
+      layerMultiple: 1.64
       strength: 0.02
       roughness: 1
       offset: {x: 0, y: 0, z: 0}
-      minValue: 2
+      minValue: 3
       lfPerturbFeatures: 0
       lfSharpness: -1
-      lfAltitudeErosion: 1
-      lfRidgeErosion: 1
+      lfAltitudeErosion: 0
+      lfRidgeErosion: 2
       lfSlopeErosion: 0
       lfLacunarity: 32.73
   _noiseLayers: []

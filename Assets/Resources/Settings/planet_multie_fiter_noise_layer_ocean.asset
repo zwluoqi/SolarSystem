@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9764a3cad214d5388c7b689570fb251, type: 3}
   m_Name: planet_multie_fiter_noise_layer_ocean
   m_EditorClassIdentifier: 
+  generateType: 0
   computeShader: {fileID: 7200000, guid: 0e6095f6769a24cdebb0db69a1e882db, type: 3}
   radius: 256
   _noiseEnable: 1
@@ -23,7 +24,7 @@ MonoBehaviour:
       layerMultiple: -0.2
       strength: 0.1
       roughness: 1
-      offset: {x: 0, y: 1.69, z: 1.69}
+      offset: {x: 0, y: 0, z: 0}
       minValue: 0.54
     uberNoise:
       layer: 1

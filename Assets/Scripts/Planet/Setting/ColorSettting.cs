@@ -12,8 +12,6 @@ namespace Planet.Setting
         public int resolution = 128;
         public Color tinyColor;
         public Material material;
-        public Material oceanMaterial;
-        public Gradient oceanMainLand;
         public Gradient ocean;
         
         public LatitudeSetting[] LatitudeSettings = new LatitudeSetting[1];
@@ -23,7 +21,6 @@ namespace Planet.Setting
         public NoiseLayer[] noiseLayers;
         [Range(0,0.1f)]
         public float blendRange = 0.03f;
-
 
         public ColorSettingBuffer[] GetBaseBuffer(RandomData randomSetting)
         {
@@ -62,9 +59,9 @@ namespace Planet.Setting
     public class LatitudeSetting
     {
         public Gradient gradient;
-        public Color tinyColor;
+        public Color tinyColor = Color.white;
         [Range(0,1)]
-        public float tinyPercent;
+        public float tinyPercent = 1;
         [Range(0,1)]
         public float startHeight;
 

@@ -2,11 +2,20 @@ using UnityEngine;
 
 namespace Planet.Setting
 {
-    
+    [SerializeField]
+    public enum GenerateType
+    {
+        NormalizeCube,//四面体划分
+        UVSphere,//经纬度迭代
+        IcosahedronSphere,//二十面体，迭代细分三角形
+        QuadSphere,//类似标准经纬度迭代
+        GoldbergPloyhedra,//十二面体对偶迭代
+    }
+
     [CreateAssetMenu()]
     public class ShapeSettting:ScriptableObject
     {
-        // public bool GPU = false;
+        public GenerateType  generateType;
         public ComputeShader computeShader;
         [Range(0.1f,10000)]
         public float radius=1;

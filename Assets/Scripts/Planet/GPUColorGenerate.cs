@@ -29,6 +29,10 @@ namespace Planet
             {
                 int stride = sizeof(ColorSettingBuffer);
                 _baseColorComputeBuffer = new ComputeBuffer(1, stride);
+                
+                //运行时频繁变化大小会导致gpu崩溃
+                stride = sizeof(LatitudeSettingBuffer);
+                _latitudeComputeBuffer = new ComputeBuffer(8, stride);
             }
         }
 
@@ -48,7 +52,7 @@ namespace Planet
             
             computeShader.SetInt(ResolutionID, resolution);
             computeShader.SetInt(noiseAddLayerCountID, _noiseLayerComputeBuffer?.count ?? 0);
-            computeShader.SetInt(latitudeCountID, _latitudeComputeBuffer?.count ?? 0);
+            computeShader.SetInt(latitudeCountID, Mathf.Min(_latitudeComputeBuffer.count, colorGenerate.colorSettting.LatitudeSettings.Length));
             
             //获取内核函数的索引
             var kernelVertices = computeShader.FindKernel("CSMainHeight");
@@ -90,23 +94,6 @@ namespace Planet
                 {
                     int stride = sizeof(NoiseLayerBuffer);
                     _noiseLayerComputeBuffer = new ComputeBuffer(Mathf.Max(1,colorSettting.noiseLayers.Length), stride);
-                }
-            }
-            
-            
-            if (_latitudeComputeBuffer != null &&
-                _latitudeComputeBuffer.count != colorSettting.LatitudeSettings.Length)
-            {
-                _latitudeComputeBuffer.Release();
-                _latitudeComputeBuffer.Dispose();
-                _latitudeComputeBuffer = null;
-            }
-            if (_latitudeComputeBuffer == null)
-            {
-                unsafe
-                {
-                    int stride = sizeof(LatitudeSettingBuffer);
-                    _latitudeComputeBuffer = new ComputeBuffer(Mathf.Max(1,colorSettting.LatitudeSettings.Length), stride);
                 }
             }
         }
