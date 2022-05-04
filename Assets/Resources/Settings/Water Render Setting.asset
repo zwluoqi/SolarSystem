@@ -27,5 +27,5 @@ MonoBehaviour:
       Strength: 0.003
       Speed: 0.12
       Dir: 45
-  alphaMultiplier: 27
-  waterSmoothness: 0.08
+  alphaMultiplier: 72
+  waterSmoothness: 0.1

@@ -26,16 +26,7 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
     public RandomSetting randomSetting;
     
     public MeshFilter[] _meshFilterss;
-
     
-    [NonSerialized]
-    public bool shapeSetttingsFoldOut;
-    [NonSerialized]
-    public bool colorSetttingsFoldOut;
-    [NonSerialized]
-    public bool waterRenderSetttingsFoldOut;
-    [NonSerialized]
-    public bool randomSetttingsFoldOut;
 
     [NonSerialized]
     public bool showNormalAndTangent;
@@ -47,6 +38,8 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
     private TerrainGenerate _terrainGenerate;
 
 
+    
+    
     private void OnDestroy()
     {
         _terrainGenerate.Dispose();
@@ -235,6 +228,18 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
 
     public void UpdateSetting(ScriptableObject scriptableObject)
     {
-        
+        if (scriptableObject is ShapeSettting)
+        {
+            OnShapeSetttingUpdated();
+        }else if (scriptableObject is ColorSettting)
+        {
+            OnColorSetttingUpdated();
+        }else if (scriptableObject is WaterRenderSetting)
+        {
+            OnWaterRenderSetttingUpdated();
+        }else if (scriptableObject is RandomSetting)
+        {
+            OnRandomSettingUpdate();
+        }
     }
 }

@@ -48,17 +48,17 @@ MonoBehaviour:
   LatitudeSettings:
   - gradient:
       serializedVersion: 2
-      key0: {r: 0.97332597, g: 1, b: 0.7971698, a: 1}
-      key1: {r: 1, g: 0.9866323, b: 0.495283, a: 1}
-      key2: {r: 0, g: 0.6603774, b: 0.013327824, a: 0}
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 1, g: 0, b: 0.040395737, a: 0}
       key3: {r: 1, g: 0.95054644, b: 0.4669811, a: 0}
       key4: {r: 1, g: 0.9985644, b: 0.9858491, a: 0}
       key5: {r: 1, g: 0.9985644, b: 0.9858491, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}
       key7: {r: 0, g: 0, b: 0, a: 0}
       ctime0: 0
-      ctime1: 15613
-      ctime2: 33153
+      ctime1: 22359
+      ctime2: 49151
       ctime3: 65535
       ctime4: 63608
       ctime5: 63608
@@ -76,7 +76,7 @@ MonoBehaviour:
       m_NumColorKeys: 4
       m_NumAlphaKeys: 2
     tinyColor: {r: 1, g: 0, b: 0, a: 1}
-    tinyPercent: 1
+    tinyPercent: 0
     startHeight: 0
   - gradient:
       serializedVersion: 2
