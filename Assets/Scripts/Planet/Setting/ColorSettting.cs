@@ -8,6 +8,7 @@ namespace Planet.Setting
     public class ColorSettting:ScriptableObject
     {
         // public bool GPU = false;
+        public bool postProcessOcean = false;
         public ComputeShader computeShader;
         public int resolution = 128;
         public Color tinyColor;

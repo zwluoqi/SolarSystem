@@ -47,7 +47,11 @@ namespace Planet.Setting
         public const int shaderWaveMaxSize = 12;
 
         public WaterLayer[] waterLayers = new WaterLayer[1];
+        [Range(0,1000)]
         public float alphaMultiplier = 10;
+        [Range(0,1000)]
+        public float colorMultiplier = 10;
+        
         public float waterSmoothness = 0.1f;
         
         
