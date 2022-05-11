@@ -22,6 +22,8 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
         private static readonly int radius = Shader.PropertyToID("radius");
         private static readonly int _alphaMultiplier = Shader.PropertyToID("_alphaMultiplier");
         private static readonly int _colorMultiplier = Shader.PropertyToID("_colorMultiplier");
+        private static readonly int _fogMultiplier = Shader.PropertyToID("_fogMultiplier");
+        
         private static readonly int _waterSmoothness = Shader.PropertyToID("_waterSmoothness");
         
         private static readonly int depthColor = Shader.PropertyToID("depthColor");
@@ -101,6 +103,8 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
                 cmd.SetGlobalFloat(radius,planetMesh.ShapeSettting.radius);
                 cmd.SetGlobalFloat(_alphaMultiplier,planetMesh.WaterRenderSettting.alphaMultiplier);
                 cmd.SetGlobalFloat(_colorMultiplier,planetMesh.WaterRenderSettting.colorMultiplier);
+                cmd.SetGlobalFloat(_fogMultiplier,planetMesh.WaterRenderSettting.fogMultiplier);
+                
                 cmd.SetGlobalFloat(_waterSmoothness,planetMesh.WaterRenderSettting.waterSmoothness);
                 
                 cmd.SetGlobalColor(depthColor,planetMesh.ColorSettting.ocean.Evaluate(0));

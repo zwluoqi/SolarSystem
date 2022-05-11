@@ -10,7 +10,7 @@ Shader "Shader/Shader_016RayMarch"
 
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-    #include "Assets/UnityTools/Shaders/RayMarch/RayMarch.hlsl"
+    #include "RayMarch.hlsl"
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
     #include "Water.hlsl"
 
@@ -22,6 +22,8 @@ Shader "Shader/Shader_016RayMarch"
             float radius;
             float _alphaMultiplier;
             float _colorMultiplier;
+            float _fogMultiplier;
+    
             float4 depthColor;
             float4 surfaceColor;
             float _waterSmoothness;
@@ -72,7 +74,7 @@ Shader "Shader/Shader_016RayMarch"
                 float3 color;
                 half depthAlpha = 1 - exp(-oceanViewDepth/radius *_alphaMultiplier);
                 alpha *= depthAlpha;
-                float opticalDepth01 = 1-exp(-(oceanViewDepth/radius)*(distToOcean/radius)*_colorMultiplier);
+                float opticalDepth01 = 1-exp(-(oceanViewDepth/radius)*_colorMultiplier);
                 //diffuse
                 color = lerp(surfaceColor,depthColor,opticalDepth01);
 
@@ -126,20 +128,23 @@ Shader "Shader/Shader_016RayMarch"
               float distCameraToCenter = length(dirCameraToCenter);
 
 
+                float3 cameraToPosDir = colorWorldPos - _WorldSpaceCameraPos.xyz;
+                        float3 rayDir = normalize(cameraToPosDir);      
+                        float2 distToSphere = RaySphere(centerPos,radius,_WorldSpaceCameraPos.xyz,rayDir);
+                
                 if(distCameraToCenter<radius)
                 {
                     //水下
                     // TODO
-                    // float3 posToCameraDir = colorWorldPos - _WorldSpaceCameraPos.xyz;
-                    // float dist = length(posToCameraDir);
-                    // // dist = min(dist,radius);
-                    // float fog = dist/20;//可见距离
-                    // return float4(surfaceColor.rgb,fog);
+                    float3 posToCameraDir = colorWorldPos - _WorldSpaceCameraPos.xyz;
+                    float dist = length(posToCameraDir);
+                    float viewDepth = min(dist,distToSphere.y);
+                    float distFog = viewDepth/radius;
+                    distFog = 1-exp(-distFog*_fogMultiplier);
+                    // float fog = dist/200;//可见距离
+                    return float4(surfaceColor.rgb,distFog);
                 }else{
-                        float3 cameraToPosDir = colorWorldPos - _WorldSpaceCameraPos.xyz;
-                        float3 rayDir = normalize(cameraToPosDir);      
-                        float2 distToSphere = RaySphere(centerPos,radius,_WorldSpaceCameraPos.xyz,rayDir);
-                
+                        
                       //撞到球distToSphere.y>0,
                       //如果length(worldDir)-distToSphere.x>0海洋,否则,陆地
                       

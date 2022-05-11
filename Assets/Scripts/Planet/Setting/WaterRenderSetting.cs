@@ -51,6 +51,9 @@ namespace Planet.Setting
         public float alphaMultiplier = 10;
         [Range(0,1000)]
         public float colorMultiplier = 10;
+        [Range(0,1000)]
+        public float fogMultiplier = 10;
+        
         
         public float waterSmoothness = 0.1f;
         

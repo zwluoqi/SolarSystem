@@ -22,4 +22,5 @@ MonoBehaviour:
       Dir: 0
   alphaMultiplier: 146
   colorMultiplier: 23
+  fogMultiplier: 8
   waterSmoothness: 0.1
