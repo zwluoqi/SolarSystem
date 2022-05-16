@@ -55,9 +55,9 @@ float GetWavePosition(float3 tangentPos,float4 wave,out float3 normal,out float3
     float Dvalue = Di.x* tangentPos.x+Di.y*tangentPos.y;
     
     float H = radius*A*sin(Dvalue*W+F*t);
-    float dx = W*Di.x*A*cos(Dvalue*W+F*t);
-    float dy = W*Di.y*A*cos(Dvalue*W+F*t);
-    tangent = float3(1,0,dy);
+    float dx = radius*W*Di.x*A*cos(Dvalue*W+F*t);
+    float dy = radius*W*Di.y*A*cos(Dvalue*W+F*t);
+    tangent = float3(1,0,-dy);
     normal = float3(-dx,-dy,1);
     return H;
 }
@@ -123,6 +123,7 @@ Varyings vert(Attributes input)
         positionOS = MultipleWavePositoin(vertexTangentToObj,input_positionOS.xyz,normalOS,tangentOS3);
         tangentOS = half4(tangentOS3,input_tangentOS.w);
     }
+    
     //positionOS = (length(positionOS)+2)*normalize(positionOS);
 
     VertexPositionInputs vertexInput = GetVertexPositionInputs(positionOS.xyz);
@@ -150,6 +151,7 @@ Varyings vert(Attributes input)
     output.viewDirWS = viewDirWS;
     output.normalWS = normalInput.normalWS;
     output.tangentWS = normalInput.tangentWS;
+    // GetWavePosition(input_positionOS.xyz,waves[0],normalOS,tangentOS.xyz);
     output.normalOS = normalOS;//input_normalOS;//normalTS;//mul(vertexObjToTangent,input_normalOS);
 
     
@@ -160,7 +162,7 @@ half4 frag(Varyings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-    //return float4(0.5*(1.0+input_normalOS.xyz),1);
+    // return float4(0.5*(1.0+input.normalOS.xyz),1);
     half2 uv = input.uv;
     half4 texColor = SAMPLE_TEXTURE2D(_OceanMap,sampler_OceanMap, uv);
     half3 color = texColor.rgb * _OceanColor.rgb;

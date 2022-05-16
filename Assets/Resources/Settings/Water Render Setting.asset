@@ -17,15 +17,18 @@ MonoBehaviour:
     useMask: 0
     waterSetting:
       Frenque: 0.1
-      Strength: 0.003
+      Strength: 0.001
       Speed: 0.1
       Dir: 0
   - enable: 0
     useMask: 0
     waterSetting:
       Frenque: 0.1
-      Strength: 0.003
+      Strength: 0.001
       Speed: 0.12
       Dir: 45
   alphaMultiplier: 72
+  colorMultiplier: 10
+  fogMultiplier: 10
+  postMaterial: {fileID: 0}
   waterSmoothness: 0.1
