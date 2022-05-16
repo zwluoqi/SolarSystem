@@ -1,11 +1,5 @@
 {
   "dependencies": {
-    "com.nol1fe.delaunator": {
-      "version": "file:DelaunatorSharp.Unity",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
-    },
     "com.unity.collab-proxy": {
       "version": "1.13.5",
       "depth": 0,

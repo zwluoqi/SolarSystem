@@ -53,7 +53,8 @@ namespace Planet.Setting
         public float colorMultiplier = 10;
         [Range(0,1000)]
         public float fogMultiplier = 10;
-        
+
+        public Material postMaterial;
         
         public float waterSmoothness = 0.1f;
         

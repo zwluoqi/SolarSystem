@@ -143,7 +143,6 @@ namespace Planet
             computeShader.Dispatch(kernelVertices, resolution, resolution, 1);
             
             _meshDataComputerBuffer.GetData(_meshData);
-            
         }
 
         private void CreateShapeBuffer(VertexGenerate vertexGenerate,MeshData meshData)

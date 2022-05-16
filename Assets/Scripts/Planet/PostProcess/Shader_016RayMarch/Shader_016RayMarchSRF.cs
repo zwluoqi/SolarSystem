@@ -78,10 +78,10 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
             }
             
             
-            if (_material == null)
-            {
-                CreateMaterial(shaderName);
-            }
+            // if (_material == null)
+            // {
+            //     CreateMaterial(shaderName);
+            // }
 
             var cmd = CommandBufferPool.Get(k_RenderTag);
 
@@ -96,6 +96,12 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
             {
                 var planetMesh = planetMeshs[i];
                 if (!planetMesh.ColorSettting.postProcessOcean)
+                {
+                    continue;
+                }
+
+                _material = planetMesh.WaterRenderSettting.postMaterial;
+                if (_material == null)
                 {
                     continue;
                 }
@@ -126,16 +132,16 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
 
 
 
-        private void CreateMaterial(string shaderName)
-        {
-            if (_material != null)
-            {
-                CoreUtils.Destroy(_material);
-            }
-
-            var shader = Shader.Find(shaderName);
-            _material = CoreUtils.CreateEngineMaterial(shader);
-        }
+        // private void CreateMaterial(string shaderName)
+        // {
+        //     if (_material != null)
+        //     {
+        //         CoreUtils.Destroy(_material);
+        //     }
+        //
+        //     var shader = Shader.Find(shaderName);
+        //     _material = CoreUtils.CreateEngineMaterial(shader);
+        // }
 
         // Cleanup any allocated resources that were created during the execution of this render pass.
         public override void OnCameraCleanup(CommandBuffer cmd)

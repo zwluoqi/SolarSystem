@@ -4,6 +4,8 @@ Shader "Shader/Shader_016RayMarch"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        waveNormalA ("waveNormalA", 2D) = "white" {}
+        waveNormalB ("waveNormalA", 2D) = "white" {}
     }
     
     HLSLINCLUDE
@@ -12,10 +14,13 @@ Shader "Shader/Shader_016RayMarch"
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
     #include "RayMarch.hlsl"
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-    #include "Water.hlsl"
+    // #include "Water.hlsl"
+    #include "Triplanar.hlsl"
 
             sampler2D _MainTex;
-            sampler2D _BlurTex;            
+            sampler2D waveNormalA;
+            sampler2D waveNormalB;
+
             CBUFFER_START(UnityPerMaterial) // Required to be compatible with SRP Batcher
             float4 _MainTex_ST;
             float3 centerPos;
@@ -69,6 +74,7 @@ Shader "Shader/Shader_016RayMarch"
 
             float4 GetOceanColor(float oceanViewDepth,float3 oceanWorldPos,float3 normalWS)
             {
+                Light mainLight = GetMainLight();
                 float alpha=1;
                 float distToOcean = length(_WorldSpaceCameraPos.xyz - oceanWorldPos);
                 float3 color;
@@ -76,46 +82,47 @@ Shader "Shader/Shader_016RayMarch"
                 alpha *= depthAlpha;
                 float opticalDepth01 = 1-exp(-(oceanViewDepth/radius)*_colorMultiplier);
                 //diffuse
-                color = lerp(surfaceColor,depthColor,opticalDepth01);
+                // float3 oceanToCenter = normalize(oceanWorldPos-centerPos);
+                // float diffuseLighting = saturate(dot(oceanToCenter, mainLight.direction));
+                color = lerp(surfaceColor,depthColor,opticalDepth01)*mainLight.color;
 
                 //specular
                 half3 viewDirWS = _WorldSpaceCameraPos.xyz - oceanWorldPos;
-                
                 half3 oceanNormal = normalize(normalWS);
-                Light mainLight = GetMainLight();
                 
                 half3 halfVec = normalize(normalize(viewDirWS) + normalize(mainLight.direction));
                 half specularAngle = acos(dot(oceanNormal,halfVec));
                 half specularExponent = specularAngle/_waterSmoothness;
                 half kspec = exp(-specularExponent*specularExponent);
                 color += kspec;
+                
                 return float4(color,alpha);
             }
 
-                
-            float3 MultipleWavePositoin(float3 pos,out float3 normal,out float3 tangent){
-                float3 newPos = pos;
-                normal = 0;
-                tangent = 0;
-
-                float3 tmpNormal;
-                float3 tmpTangent;
-                
-                float tmpOffset;
-                for(int i=0;i<waveLen;i+=1){
-                    tmpOffset = GetWavePosition(pos,waves[i],radius,tmpNormal,tmpTangent);
-                      
-                    half3 offsetPos = tmpNormal*tmpOffset;
-                
-                    newPos += offsetPos;
-                    normal += tmpNormal;
-                    tangent += tmpTangent;
-                }
-                normal = normalize(normal);
-                tangent = normalize(tangent);
-                
-                return newPos;
-            }
+            //     
+            // float3 MultipleWavePositoin(float3 pos,out float3 normal,out float3 tangent){
+            //     float3 newPos = pos;
+            //     normal = 0;
+            //     tangent = 0;
+            //
+            //     float3 tmpNormal;
+            //     float3 tmpTangent;
+            //     
+            //     float tmpOffset;
+            //     for(int i=0;i<waveLen;i+=1){
+            //         tmpOffset = GetWavePosition(pos,waves[i],radius,tmpNormal,tmpTangent);
+            //           
+            //         half3 offsetPos = tmpNormal*tmpOffset;
+            //     
+            //         newPos += offsetPos;
+            //         normal += tmpNormal;
+            //         tangent += tmpTangent;
+            //     }
+            //     normal = normalize(normal);
+            //     tangent = normalize(tangent);
+            //     
+            //     return newPos;
+            // }
 
                 
             half4 FragBlurH(Varyings input) : SV_Target
@@ -154,16 +161,20 @@ Shader "Shader/Shader_016RayMarch"
                             float3 hitSpherePos = _WorldSpaceCameraPos.xyz+ rayDir*distToSphere.x;
                             half3 normalWS = hitSpherePos - centerPos;
                             normalWS = normalize(normalWS);
-                            //TODO 还是需要矩阵
-                            // if(waveLen>0){
-                            //     half3 tangentOS3;
-                            //     half3 offsetNormal=0;
-                            //     half3 offsetPos = hitSpherePos - centerPos;
-                            //     hitSpherePos = MultipleWavePositoin(offsetPos.xyz,offsetNormal,tangentOS3);
-                            //     normalWS += offsetNormal;
-                            // }
-                            // return float4(normalWS,1);
-                            // float depth01 = lerp(oceanViewDepth/radius ,1,distToSphere.x/radius);
+
+                            if(waveLen>0){
+                                //https://bgolus.medium.com/normal-mapping-for-a-triplanar-shader-10bf39dca05a
+                                float waveSpeed = waves[0].z;
+                                float Frenque = waves[0].x;
+                                float waveStrength = waves[0].y;
+                          	    float2 waveOffsetA = float2(_Time.x * waveSpeed, _Time.x * waveSpeed * 0.8);
+					            float2 waveOffsetB = float2(_Time.x * waveSpeed * - 0.8, _Time.x * waveSpeed * -0.3);
+                                
+					            float3 waveNormal = triplanarNormal(hitSpherePos, normalWS, Frenque / radius, waveOffsetA, waveNormalA);
+					            waveNormal = triplanarNormal(hitSpherePos, waveNormal, Frenque / radius, waveOffsetB, waveNormalB);
+					            waveNormal = normalize(lerp(normalWS, waveNormal, waveStrength));
+                                normalWS = waveNormal;
+                            }
                             float4 oceanColor = GetOceanColor(oceanViewDepth,hitSpherePos,normalWS);
                             return float4(oceanColor.rgb,oceanColor.a);
                       }
