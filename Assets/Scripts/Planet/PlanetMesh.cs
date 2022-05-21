@@ -38,11 +38,14 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
     private TerrainGenerate _terrainGenerate;
 
 
-    
-    
+    private void Awake()
+    {
+        OnBaseUpdate();
+    }
+
     private void OnDestroy()
     {
-        _terrainGenerate.Dispose();
+        _terrainGenerate?.Dispose();
         _terrainGenerate = null;
     }
 
@@ -94,9 +97,10 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
             if (meshFilterss[i] == null)
             {
                 var meshRenderer = (new GameObject(i + "")).AddComponent<MeshRenderer>();
-                meshRenderer.transform.SetParent(this.transform);
-                meshRenderer.transform.localPosition = Vector3.zero;
-                meshRenderer.transform.localScale = Vector3.one;
+                Transform transform1;
+                (transform1 = meshRenderer.transform).SetParent(this.transform);
+                transform1.localPosition = Vector3.zero;
+                transform1.localScale = Vector3.one;
                 var meshFilter = meshRenderer.gameObject.AddComponent<MeshFilter>();
                 if (collide)
                 {
@@ -111,7 +115,14 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
         {
             if (meshFilterss[i].sharedMesh == null)
             {
-                meshFilterss[i].sharedMesh = new Mesh {name = i + "", hideFlags = HideFlags.DontSave};
+                if (Application.isPlaying)
+                {
+                    meshFilterss[i].sharedMesh = new Mesh {name = i + ""};
+                }
+                else
+                {
+                    meshFilterss[i].sharedMesh = new Mesh {name = i + "", hideFlags = HideFlags.DontSave};
+                }
                 if (collide)
                 {
                     meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = meshFilterss[i].sharedMesh;
@@ -121,7 +132,15 @@ public class PlanetMesh : MonoBehaviour, ISettingUpdate
             }
             else
             {
-                meshFilterss[i].sharedMesh.hideFlags = HideFlags.DontSave;
+                if (collide)
+                {
+                    meshFilterss[i].GetComponent<MeshCollider>().sharedMesh = meshFilterss[i].sharedMesh;
+                }
+
+                if (!Application.isPlaying)
+                {
+                    meshFilterss[i].sharedMesh.hideFlags = HideFlags.DontSave;
+                }
             }
         }
 

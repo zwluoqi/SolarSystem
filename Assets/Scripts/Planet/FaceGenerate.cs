@@ -220,6 +220,10 @@ namespace Planet
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
             mesh.RecalculateBounds();
+            if (meshFilter.TryGetComponent<MeshCollider>(out var meshCollider))
+            {
+                meshCollider.sharedMesh = mesh;
+            }
         }
 
         public void FormatHeight(PlanetSettingData planetSettingData,ColorGenerate colorGenerate,GPUShapeGenerate gpuShapeGenerate)
