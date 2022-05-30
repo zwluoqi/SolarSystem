@@ -1,5 +1,5 @@
 
-Shader "Shader/Shader_016RayMarch"
+Shader "Shader/Shader_Ocean"
 {
     Properties
     {
@@ -12,7 +12,7 @@ Shader "Shader/Shader_016RayMarch"
 
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-    #include "RayMarch.hlsl"
+    #include "Assets/ShaderLabs/Shaders/RayMarchingIntersection.hlsl"
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
     // #include "Water.hlsl"
     #include "Triplanar.hlsl"
@@ -99,31 +99,6 @@ Shader "Shader/Shader_016RayMarch"
                 return float4(color,alpha);
             }
 
-            //     
-            // float3 MultipleWavePositoin(float3 pos,out float3 normal,out float3 tangent){
-            //     float3 newPos = pos;
-            //     normal = 0;
-            //     tangent = 0;
-            //
-            //     float3 tmpNormal;
-            //     float3 tmpTangent;
-            //     
-            //     float tmpOffset;
-            //     for(int i=0;i<waveLen;i+=1){
-            //         tmpOffset = GetWavePosition(pos,waves[i],radius,tmpNormal,tmpTangent);
-            //           
-            //         half3 offsetPos = tmpNormal*tmpOffset;
-            //     
-            //         newPos += offsetPos;
-            //         normal += tmpNormal;
-            //         tangent += tmpTangent;
-            //     }
-            //     normal = normalize(normal);
-            //     tangent = normalize(tangent);
-            //     
-            //     return newPos;
-            // }
-
                 
             half4 FragBlurH(Varyings input) : SV_Target
             {
@@ -137,7 +112,7 @@ Shader "Shader/Shader_016RayMarch"
 
                 float3 cameraToPosDir = colorWorldPos - _WorldSpaceCameraPos.xyz;
                         float3 rayDir = normalize(cameraToPosDir);      
-                        float2 distToSphere = RaySphere(centerPos,radius,_WorldSpaceCameraPos.xyz,rayDir);
+                        float2 distToSphere = RaySphereIntersection(centerPos,radius,_WorldSpaceCameraPos.xyz,rayDir);
                 
                 if(distCameraToCenter<radius)
                 {

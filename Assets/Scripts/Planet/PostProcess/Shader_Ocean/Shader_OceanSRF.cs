@@ -4,9 +4,9 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Object = UnityEngine.Object;
 
-public class Shader_016RayMarchSRF : ScriptableRendererFeature
+public class Shader_OceanSRF : ScriptableRendererFeature
 {
-    class Shader_016RayMarchPass : ScriptableRenderPass
+    class Shader_OceanPass : ScriptableRenderPass
     {
 
         public static string k_RenderTag = "Shader_016RayMarch";
@@ -40,10 +40,6 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
         // private RenderTextureDescriptor _cameraTextureDescriptor;
 
 
-        public Shader_016RayMarchPass()
-        {
-            
-        }
         
         // This method is called before executing the render pass.
         // It can be used to configure render targets and their clear state. Also to create temporary render target textures.
@@ -149,12 +145,12 @@ public class Shader_016RayMarchSRF : ScriptableRendererFeature
         }
     }
 
-    Shader_016RayMarchPass m_ScriptablePass;
+    Shader_OceanPass m_ScriptablePass;
 
     /// <inheritdoc/>
     public override void Create()
     {
-        m_ScriptablePass = new Shader_016RayMarchPass();
+        m_ScriptablePass = new Shader_OceanPass();
 
         // Configures where the render pass should be injected.
         m_ScriptablePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;

@@ -23,5 +23,5 @@ MonoBehaviour:
   alphaMultiplier: 109
   colorMultiplier: 50
   fogMultiplier: 8
-  postMaterial: {fileID: 2100000, guid: b8130adc70cdd47de899994fe47c7c71, type: 2}
+  postMaterial: {fileID: 2100000, guid: a59133f83d7614f77b66524512bf8ef7, type: 2}
   waterSmoothness: 0.2

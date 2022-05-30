@@ -219,6 +219,8 @@ namespace Planet
             mesh.uv = _meshData.formatuvs;
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
+            // mesh.normals = _meshData.normals;
+            // mesh.tangents = _meshData.tangents;
             mesh.RecalculateBounds();
             if (meshFilter.TryGetComponent<MeshCollider>(out var meshCollider))
             {

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   generateType: 0
   computeShader: {fileID: 7200000, guid: 0e6095f6769a24cdebb0db69a1e882db, type: 3}
-  radius: 256
+  radius: 5000
   _noiseEnable: 1
   _noiseSetting:
     noiseType: 0

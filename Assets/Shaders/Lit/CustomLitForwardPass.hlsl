@@ -116,9 +116,9 @@ Varyings CustomLitPassVertex(Attributes input)
 
     float2 sourceUV = TRANSFORM_TEX(input.texcoord, _BaseMap);      
     //float ocean = invLerp(_minmax.x,0,sourceUV.y);
-    //float depth = invLerp(0,_minmax.y,sourceUV.y);
+    float terrainHeight01 = invLerp(_minmax.x,_minmax.y,sourceUV.y);
     //float x = 0.5*ocean+0.5*top;
-    output.uv.x = 0.5f;
+    output.uv.x = terrainHeight01;
     output.uv.y = sourceUV.x;
     //smoothness
     //output.color.x = (1.0-floor(ocean));
@@ -183,7 +183,8 @@ half4 CustomLitPassFragment(Varyings input) : SV_Target
     InitializeInputData(input, surfaceData.normalTS, inputData);
 
     half4 albedoAlpha = SampleAlbedoAlpha(input.uv, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap));
- 
+    // return float4(input.uv.y,0,0,1);
+    // return albedoAlpha;
     half4 color = UniversalFragmentPBR(inputData, surfaceData);
 
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
