@@ -82,9 +82,9 @@ Shader "Shader/Shader_Ocean"
                 alpha *= depthAlpha;
                 float opticalDepth01 = 1-exp(-(oceanViewDepth/radius)*_colorMultiplier);
                 //diffuse
-                // float3 oceanToCenter = normalize(oceanWorldPos-centerPos);
-                // float diffuseLighting = saturate(dot(oceanToCenter, mainLight.direction));
-                color = lerp(surfaceColor,depthColor,opticalDepth01)*mainLight.color;
+                float3 oceanToCenter = normalize(oceanWorldPos-centerPos);
+                float diffuseLighting = saturate(0.5*dot(oceanToCenter, mainLight.direction)+0.5);
+                color = lerp(surfaceColor,depthColor,opticalDepth01)*mainLight.color*pow(diffuseLighting,0.8);
 
                 //specular
                 half3 viewDirWS = _WorldSpaceCameraPos.xyz - oceanWorldPos;
@@ -113,6 +113,7 @@ Shader "Shader/Shader_Ocean"
                 float3 cameraToPosDir = colorWorldPos - _WorldSpaceCameraPos.xyz;
                         float3 rayDir = normalize(cameraToPosDir);      
                         float2 distToSphere = RaySphereIntersection(centerPos,radius,_WorldSpaceCameraPos.xyz,rayDir);
+
                 
                 if(distCameraToCenter<radius)
                 {
