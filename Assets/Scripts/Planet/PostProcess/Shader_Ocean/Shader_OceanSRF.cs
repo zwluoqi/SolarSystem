@@ -153,7 +153,7 @@ public class Shader_OceanSRF : ScriptableRendererFeature
         m_ScriptablePass = new Shader_OceanPass();
 
         // Configures where the render pass should be injected.
-        m_ScriptablePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+        m_ScriptablePass.renderPassEvent = RenderPassEvent.BeforeRenderingTransparents-30;
     }
 
     // Here you can inject one or multiple render passes in the renderer.

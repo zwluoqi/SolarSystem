@@ -27,9 +27,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RendererFeatures:
   - {fileID: 7723814013076499970}
-  - {fileID: -6919458527182858211}
   - {fileID: 2253452835880979927}
-  m_RendererFeatureMap: 02ee9b20ec7f306b1dd837612125f99fd74dc8386adf451f
+  - {fileID: 4954868805890519544}
+  m_RendererFeatureMap: 02ee9b20ec7f306bd74dc8386adf451ff8b1c44bed3ac344
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
   shaders:
@@ -69,6 +69,19 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9899dfccfd6a64749bf6ad30cca0a8ed, type: 3}
   m_Name: NewRayMarchSkySRF
+  m_EditorClassIdentifier: 
+  m_Active: 1
+--- !u!114 &4954868805890519544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 489f81d00086e4bfbb6bc2e42f0516d9, type: 3}
+  m_Name: NewRayMarchCloudSRF
   m_EditorClassIdentifier: 
   m_Active: 1
 --- !u!114 &7723814013076499970
