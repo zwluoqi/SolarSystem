@@ -37,6 +37,8 @@ namespace Clouds
         public float globalCoverage = 1;
         [Min(0.01f)]
         public float globalDensity = 1;
+        [Range(0.0f, 1f)] 
+        public float globalStarHeight = 0.2f;
         [Range(0.2f,1f)]
         public float globalThickness = 0.2f;
         

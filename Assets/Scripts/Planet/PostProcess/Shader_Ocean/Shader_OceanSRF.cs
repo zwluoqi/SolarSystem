@@ -9,14 +9,14 @@ public class Shader_OceanSRF : ScriptableRendererFeature
     class Shader_OceanPass : ScriptableRenderPass
     {
 
-        public static string k_RenderTag = "Shader_016RayMarch";
-        static string shaderName = "Shader/Shader_016RayMarch";
-        // private Shader_016RayMarchVolume volume;
+        public static string k_RenderTag = "RayMarchOcean";
+
+
         private RenderTargetIdentifier _renderTargetIdentifier;
         private Material _material;
 
         private static readonly int MainTexId = Shader.PropertyToID("_MainTex");
-        private static readonly int TmpTexId = Shader.PropertyToID("_TmpTex");
+        private static readonly int TmpTexId = Shader.PropertyToID("_OceanTex");
 
         private static readonly int centerPos = Shader.PropertyToID("centerPos");
         private static readonly int radius = Shader.PropertyToID("radius");
@@ -73,11 +73,6 @@ public class Shader_OceanSRF : ScriptableRendererFeature
                 return;
             }
             
-            
-            // if (_material == null)
-            // {
-            //     CreateMaterial(shaderName);
-            // }
 
             var cmd = CommandBufferPool.Get(k_RenderTag);
 
@@ -125,19 +120,6 @@ public class Shader_OceanSRF : ScriptableRendererFeature
             CommandBufferPool.Release(cmd);
 
         }
-
-
-
-        // private void CreateMaterial(string shaderName)
-        // {
-        //     if (_material != null)
-        //     {
-        //         CoreUtils.Destroy(_material);
-        //     }
-        //
-        //     var shader = Shader.Find(shaderName);
-        //     _material = CoreUtils.CreateEngineMaterial(shader);
-        // }
 
         // Cleanup any allocated resources that were created during the execution of this render pass.
         public override void OnCameraCleanup(CommandBuffer cmd)
